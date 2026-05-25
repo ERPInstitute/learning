@@ -94,15 +94,12 @@
   header p { margin: 0; opacity: 0.92; font-size: 14px; }
   /* Top menu bar with dropdown groups */
   nav.menu-bar {
-    display: flex; justify-content: center; gap: 2px;
+    display: flex; justify-content: center; gap: 2px; flex-wrap: wrap;
     background: var(--card); border-bottom: 1px solid var(--border);
     position: sticky; top: 0; z-index: 30;
     box-shadow: 0 2px 4px var(--shadow); padding: 0 8px;
-    overflow-x: auto; overflow-y: visible;
-    scrollbar-width: thin;
+    overflow: visible;
   }
-  nav.menu-bar::-webkit-scrollbar { height: 4px; }
-  nav.menu-bar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
   .menu-group { position: relative; flex-shrink: 0; }
   .menu-trigger {
@@ -130,10 +127,14 @@
     box-shadow: 0 10px 24px var(--shadow);
     display: none; padding: 6px;
     animation: dropdownIn 0.15s ease-out;
+    z-index: 100;
   }
+  /* Last group (admin) — anchor dropdown to right edge to avoid being clipped */
+  .menu-group:last-child .menu-dropdown { left: auto; right: 0; border-radius: 10px 0 10px 10px; }
   @keyframes dropdownIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
   .menu-group:hover .menu-dropdown,
   .menu-group.open .menu-dropdown { display: block; }
+  /* Hover bridge: invisible 8px above dropdown so cursor can travel from trigger without closing */
   .menu-dropdown::before {
     content: ''; position: absolute; top: -10px; left: 0; right: 0; height: 10px;
   }
