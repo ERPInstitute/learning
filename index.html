@@ -107,6 +107,27 @@
   .option.correct { border-color: var(--green); background: var(--green-bg); }
   .option.wrong { border-color: var(--red); background: var(--red-bg); }
   .option.disabled { cursor: default; }
+  .option.attempted-wrong {
+    border-color: var(--red); background: var(--red-bg);
+    opacity: 0.55; cursor: not-allowed; pointer-events: none;
+    position: relative;
+  }
+  .option.attempted-wrong::after {
+    content: '✗'; position: absolute; right: 10px; top: 50%;
+    transform: translateY(-50%); color: var(--red); font-weight: 700; font-size: 16px;
+  }
+  .attempt-banner {
+    margin-top: 12px; padding: 10px 12px; background: #FFF7ED;
+    border-left: 4px solid var(--warning); border-radius: 6px;
+    font-size: 13px; color: var(--text); display: flex; gap: 10px;
+    align-items: center; flex-wrap: wrap;
+  }
+  .attempt-banner .surrender-btn {
+    margin-left: auto; padding: 6px 14px; background: white;
+    border: 1px solid var(--warning); border-radius: 5px; cursor: pointer;
+    color: var(--warning); font-weight: 600; font-size: 12px;
+  }
+  .attempt-banner .surrender-btn:hover { background: var(--yellow-bg); }
   .option-letter {
     font-weight: 700; flex-shrink: 0; width: 24px; height: 24px;
     border-radius: 50%; background: #F3F4F6; display: flex;
@@ -646,6 +667,60 @@
     .admin-table { font-size: 12px; }
     .admin-table th, .admin-table td { padding: 8px 6px; }
   }
+
+  /* Retail Practice tab */
+  .retail-intro {
+    background: linear-gradient(135deg, #DB2777 0%, #BE185D 100%);
+    color: white; border-radius: 12px; padding: 22px; margin-bottom: 18px;
+  }
+  .retail-intro h2 { margin: 0 0 6px 0; font-size: 22px; }
+  .retail-intro p { margin: 0; opacity: 0.92; font-size: 14px; }
+  .retail-toc {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 14px;
+  }
+  .retail-toc h3 { color: var(--primary); margin: 0 0 10px 0; font-size: 14px; }
+  .retail-toc-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px; }
+  .retail-toc-list a {
+    padding: 6px 10px; background: #F9FAFB; border-radius: 6px;
+    text-decoration: none; color: var(--text); font-size: 13px;
+    cursor: pointer; border-left: 3px solid var(--primary-light);
+  }
+  .retail-toc-list a:hover { background: var(--blue-bg); }
+  .retail-chapter {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    margin-bottom: 14px; overflow: hidden;
+  }
+  .retail-chapter-head {
+    padding: 14px 18px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    font-size: 15px; font-weight: 700;
+  }
+  .retail-chapter-head:hover { filter: brightness(1.05); }
+  .retail-chapter-head .toggle-icon { transition: transform 0.2s; }
+  .retail-chapter.open .retail-chapter-head .toggle-icon { transform: rotate(180deg); }
+  .retail-chapter-body { display: none; padding: 16px 20px; }
+  .retail-chapter.open .retail-chapter-body { display: block; }
+  .retail-section { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #F3F4F6; }
+  .retail-section:last-child { border-bottom: none; }
+  .retail-section h4 {
+    color: var(--accent); margin: 0 0 8px 0; font-size: 14px;
+    padding-left: 10px; border-left: 4px solid var(--accent);
+  }
+  .retail-section p {
+    margin: 6px 0; font-size: 14px; line-height: 1.65; color: var(--text);
+  }
+  .retail-cta {
+    margin-top: 12px; padding: 12px 14px;
+    background: linear-gradient(135deg, #FEF3C7 0%, #FED7AA 100%);
+    border-left: 4px solid var(--warning); border-radius: 6px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .retail-cta button {
+    padding: 8px 16px; background: var(--warning); color: white; border: none;
+    border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;
+  }
+  .retail-cta button:hover { background: #92400E; }
 
   /* Question Editor */
   .qed-toolbar {
@@ -1493,6 +1568,7 @@
   <button class="tab-btn" data-tab="advanced">🎯 Nâng cao</button>
   <button class="tab-btn" data-tab="gotchas">⚠️ Gotchas</button>
   <button class="tab-btn" data-tab="workshop">📋 Workshop</button>
+  <button class="tab-btn" data-tab="retail">🏪 Retail</button>
   <button class="tab-btn" data-tab="glossary">📖 Thuật ngữ</button>
   <button class="tab-btn" data-tab="bookmarks">📌 Bookmarks</button>
   <button class="tab-btn" data-tab="leaderboard">🏆 Top</button>
@@ -1508,6 +1584,7 @@
   <div id="advanced" class="panel"></div>
   <div id="gotchas" class="panel"></div>
   <div id="workshop" class="panel"></div>
+  <div id="retail" class="panel"></div>
   <div id="glossary" class="panel"></div>
   <div id="bookmarks" class="panel"></div>
   <div id="leaderboard" class="panel"></div>
@@ -1624,6 +1701,7 @@
 </script>
 
 <script src="data/questions.js"></script>
+<script src="data/retail.js"></script>
 <script>
 // ============ DATA ============
 // QUESTIONS data is loaded from data/questions.js (window.QUESTIONS), with inline fallback.
@@ -2169,6 +2247,7 @@ let state = {
   confidence: {},// {questionId: 'sure' | 'doubt' | 'guess'}
   srs: {},       // {questionId: { interval, due, ease, lastReview, reps, lapses }}
   mockExamHistory: [], // array of mock exam summaries
+  attempts: {},  // {questionId: { wrongIndices: [...], gaveUp: bool, count: N }} — try-again state
   dailyActivity: {}, // {'YYYY-MM-DD': numAnswered}
   achievements: {},  // {achId: { unlockedAt: ts }}
   consecutiveCorrect: 0, // current streak of correct answers (resets on wrong)
@@ -2380,7 +2459,8 @@ function renderQuiz() {
 
       ${answer ? `
         <div class="feedback show ${answer.correct ? 'success' : 'error'}">
-          <strong>${answer.correct ? '✅ Chính xác!' : '❌ Chưa đúng.'} ${renderCorrectAnswerLabel(q)}</strong>
+          <strong>${answer.correct ? '✅ Chính xác!' : (answer.gaveUp ? '🏳️ Đã xem đáp án.' : '❌ Chưa đúng.')} ${renderCorrectAnswerLabel(q)}</strong>
+          ${answer.attempts > 1 || answer.wrongCount > 0 ? '<div style="margin-top:6px; font-size:12px; color:var(--text-muted);">' + (answer.correct ? '💡 Bạn cần ' + answer.attempts + ' lần thử mới đúng. Câu này SRS sẽ lặp lại sớm hơn để bạn nhớ kỹ.' : '💡 Bạn đã thử sai ' + answer.wrongCount + ' lần trước khi xem đáp án.') + '</div>' : ''}
         </div>
         <div class="explanation show">
           <h4>📖 Giải thích</h4>
@@ -2465,20 +2545,34 @@ function renderQuestionBody(q, answer) {
 }
 
 function renderSingleChoice(q, answer, locked) {
+  const att = state.attempts && state.attempts[q.id];
+  const wrongAttempts = att ? (att.wrongIndices || []) : [];
+  const gaveUp = !!(att && att.gaveUp);
   return `<div class="options${locked ? ' pre-confidence' : ''}" id="options-${q.id}">
     ${q.options.map((opt, i) => {
       let cls = "option";
       if (answer) {
         cls += " disabled";
+        // After final answer: show correct + user's wrong selection
         if (i === q.correct) cls += " correct";
         else if (i === answer.selected) cls += " wrong";
+        else if (wrongAttempts.includes(i)) cls += " wrong";
+      } else {
+        // In-progress: mark previously-attempted wrong options
+        if (wrongAttempts.includes(i)) cls += " attempted-wrong";
       }
-      return `<div class="${cls}" onclick="${answer ? '' : `selectOption(${q.id}, ${i})`}">
+      return `<div class="${cls}" onclick="${answer || wrongAttempts.includes(i) ? '' : `selectOption(${q.id}, ${i})`}">
         <div class="option-letter">${String.fromCharCode(65 + i)}</div>
         <div class="option-text">${opt}</div>
       </div>`;
     }).join("")}
-  </div>`;
+  </div>
+  ${!answer && wrongAttempts.length > 0 ? `
+    <div class="attempt-banner">
+      <span>❌ Bạn đã chọn sai <strong>${wrongAttempts.length}</strong> lần. Hãy thử lại đáp án khác.</span>
+      ${wrongAttempts.length >= 2 ? `<button class="surrender-btn" onclick="surrenderQuestion(${q.id})">🏳️ Tôi xin chịu thua, xem đáp án</button>` : ''}
+    </div>
+  ` : ''}`;
 }
 
 function renderMultiSelect(q, answer, locked) {
@@ -2533,19 +2627,85 @@ function submitMultiSelect(qid) {
   if (sel.length === 0) return;
   const correctArr = (q.correct || []).slice().sort();
   const correct = sel.length === correctArr.length && sel.every((v, i) => v === correctArr[i]);
+
+  if (!state.attempts) state.attempts = {};
+  if (!state.attempts[qid]) state.attempts[qid] = { wrongCount: 0, count: 0, gaveUp: false };
+  const att = state.attempts[qid];
+
+  if (!correct) {
+    // Wrong submission — don't finalize. Increment counter, give partial feedback.
+    att.count = (att.count || 0) + 1;
+    att.wrongCount = att.count;
+    state.lastActivity = Date.now();
+    if (!state.firstStart) state.firstStart = state.lastActivity;
+    saveState();
+    // Show a temporary toast hint
+    const correctCount = sel.filter(s => correctArr.includes(s)).length;
+    const totalCorrect = correctArr.length;
+    const wrongPicked = sel.filter(s => !correctArr.includes(s)).length;
+    showMultiFeedbackHint(qid, correctCount, totalCorrect, wrongPicked, att.count);
+    return;
+  }
+
   const now = Date.now();
-  state.answered[qid] = { selected: sel, correct, ts: now, type: 'multi' };
+  const totalAttempts = (att.count || 0) + 1;
+  state.answered[qid] = { selected: sel, correct: true, ts: now, type: 'multi', attempts: totalAttempts, wrongCount: att.count || 0 };
   state.lastActivity = now;
   if (!state.firstStart) state.firstStart = now;
   recordDailyActivity();
-  if (correct) {
+  if (totalAttempts === 1) {
     state.consecutiveCorrect = (state.consecutiveCorrect || 0) + 1;
     if (state.consecutiveCorrect > (state.maxConsecutiveCorrect || 0)) state.maxConsecutiveCorrect = state.consecutiveCorrect;
   } else state.consecutiveCorrect = 0;
-  scheduleSRSAfterAnswer(qid, correct, state.confidence[qid]);
+  const adjusted = totalAttempts === 1;
+  scheduleSRSAfterAnswer(qid, adjusted, state.confidence[qid]);
   delete _qWork.multi[qid];
   saveState();
   checkAchievements(false);
+  renderQuiz();
+}
+
+function showMultiFeedbackHint(qid, correctCount, totalCorrect, wrongPicked, attempts) {
+  // Insert a transient banner under the options
+  const optionsEl = document.getElementById('options-' + qid);
+  if (!optionsEl) return;
+  let banner = optionsEl.parentElement.querySelector('.multi-hint-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'multi-hint-banner attempt-banner';
+    optionsEl.parentElement.insertBefore(banner, optionsEl.nextSibling);
+  }
+  const surrenderBtn = attempts >= 2
+    ? '<button class="surrender-btn" onclick="surrenderMulti(' + qid + ')">🏳️ Tôi xin chịu thua, xem đáp án</button>'
+    : '';
+  banner.innerHTML = '<span>❌ Lần thử <strong>' + attempts + '</strong>: Đúng <strong>' + correctCount + '/' + totalCorrect + '</strong>'
+    + (wrongPicked > 0 ? ', tick nhầm <strong>' + wrongPicked + '</strong> đáp án' : '') + '. Hãy điều chỉnh và thử lại.</span>'
+    + surrenderBtn;
+}
+
+function surrenderMulti(qid) {
+  if (!confirm('Xem đáp án và kết thúc? Câu này sẽ được tính là SAI.')) return;
+  const q = QUESTIONS.find(x => x.id === qid);
+  if (!q) return;
+  if (!state.attempts) state.attempts = {};
+  if (!state.attempts[qid]) state.attempts[qid] = { count: 0, wrongCount: 0, gaveUp: false };
+  state.attempts[qid].gaveUp = true;
+  const now = Date.now();
+  const userSel = Array.from(_qWork.multi[qid] || []).sort();
+  state.answered[qid] = {
+    selected: userSel,
+    correct: false,
+    ts: now,
+    type: 'multi',
+    attempts: state.attempts[qid].count || 0,
+    wrongCount: state.attempts[qid].count || 0,
+    gaveUp: true
+  };
+  state.lastActivity = now;
+  state.consecutiveCorrect = 0;
+  scheduleSRSAfterAnswer(qid, false, state.confidence[qid]);
+  delete _qWork.multi[qid];
+  saveState();
   renderQuiz();
 }
 
@@ -2630,22 +2790,76 @@ function submitSequence(qid) {
   const q = QUESTIONS.find(x => x.id === qid);
   if (!q) return;
   const arr = _qWork.sequence[qid] || [];
-  // The user's submitted order is the originalIdx of each item at each position
   const selected = arr.map(item => item.originalIdx);
-  // Correct iff each position has its originalIdx === position
   const correct = selected.every((v, i) => v === i);
+
+  if (!state.attempts) state.attempts = {};
+  if (!state.attempts[qid]) state.attempts[qid] = { count: 0, gaveUp: false };
+  const att = state.attempts[qid];
+
+  if (!correct) {
+    att.count = (att.count || 0) + 1;
+    state.lastActivity = Date.now();
+    if (!state.firstStart) state.firstStart = state.lastActivity;
+    saveState();
+    const rightCount = selected.filter((v, i) => v === i).length;
+    showSequenceFeedbackHint(qid, rightCount, selected.length, att.count);
+    return;
+  }
+
   const now = Date.now();
-  state.answered[qid] = { selected, correct, ts: now, type: 'sequence' };
+  const totalAttempts = (att.count || 0) + 1;
+  state.answered[qid] = { selected, correct: true, ts: now, type: 'sequence', attempts: totalAttempts, wrongCount: att.count || 0 };
   state.lastActivity = now;
   if (!state.firstStart) state.firstStart = now;
   recordDailyActivity();
-  if (correct) {
+  if (totalAttempts === 1) {
     state.consecutiveCorrect = (state.consecutiveCorrect || 0) + 1;
     if (state.consecutiveCorrect > (state.maxConsecutiveCorrect || 0)) state.maxConsecutiveCorrect = state.consecutiveCorrect;
   } else state.consecutiveCorrect = 0;
-  scheduleSRSAfterAnswer(qid, correct, state.confidence[qid]);
+  scheduleSRSAfterAnswer(qid, totalAttempts === 1, state.confidence[qid]);
   saveState();
   checkAchievements(false);
+  renderQuiz();
+}
+
+function showSequenceFeedbackHint(qid, rightCount, total, attempts) {
+  const optionsEl = document.getElementById('options-' + qid);
+  if (!optionsEl) return;
+  let banner = optionsEl.querySelector('.seq-hint-banner') || optionsEl.parentElement.querySelector('.seq-hint-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'seq-hint-banner attempt-banner';
+    optionsEl.appendChild(banner);
+  }
+  const surrenderBtn = attempts >= 2
+    ? '<button class="surrender-btn" onclick="surrenderSequence(' + qid + ')">🏳️ Tôi xin chịu thua, xem đáp án</button>'
+    : '';
+  banner.innerHTML = '<span>❌ Lần thử <strong>' + attempts + '</strong>: Đúng <strong>' + rightCount + '/' + total + '</strong> vị trí. Hãy đổi chỗ và thử lại.</span>' + surrenderBtn;
+}
+
+function surrenderSequence(qid) {
+  if (!confirm('Xem đáp án và kết thúc? Câu này sẽ được tính là SAI.')) return;
+  const q = QUESTIONS.find(x => x.id === qid);
+  if (!q) return;
+  if (!state.attempts) state.attempts = {};
+  if (!state.attempts[qid]) state.attempts[qid] = { count: 0, gaveUp: false };
+  state.attempts[qid].gaveUp = true;
+  const now = Date.now();
+  const arr = _qWork.sequence[qid] || [];
+  state.answered[qid] = {
+    selected: arr.map(it => it.originalIdx),
+    correct: false,
+    ts: now,
+    type: 'sequence',
+    attempts: state.attempts[qid].count || 0,
+    wrongCount: state.attempts[qid].count || 0,
+    gaveUp: true
+  };
+  state.lastActivity = now;
+  state.consecutiveCorrect = 0;
+  scheduleSRSAfterAnswer(qid, false, state.confidence[qid]);
+  saveState();
   renderQuiz();
 }
 
@@ -2799,20 +3013,75 @@ function submitMatching(qid) {
   const w = _qWork.matching[qid];
   if (!w || Object.keys(w.pairs).length < q.pairs.length) return;
   const pairs = w.pairs;
-  // Correct iff every leftIdx paired with rightIdx === leftIdx
   const correct = Object.keys(pairs).every(k => pairs[k] === parseInt(k)) && Object.keys(pairs).length === q.pairs.length;
+
+  if (!state.attempts) state.attempts = {};
+  if (!state.attempts[qid]) state.attempts[qid] = { count: 0, gaveUp: false };
+  const att = state.attempts[qid];
+
+  if (!correct) {
+    att.count = (att.count || 0) + 1;
+    state.lastActivity = Date.now();
+    if (!state.firstStart) state.firstStart = state.lastActivity;
+    saveState();
+    const rightCount = Object.keys(pairs).filter(k => pairs[k] === parseInt(k)).length;
+    showMatchingFeedbackHint(qid, rightCount, q.pairs.length, att.count);
+    return;
+  }
+
   const now = Date.now();
-  state.answered[qid] = { selected: pairs, correct, ts: now, type: 'matching' };
+  const totalAttempts = (att.count || 0) + 1;
+  state.answered[qid] = { selected: pairs, correct: true, ts: now, type: 'matching', attempts: totalAttempts, wrongCount: att.count || 0 };
   state.lastActivity = now;
   if (!state.firstStart) state.firstStart = now;
   recordDailyActivity();
-  if (correct) {
+  if (totalAttempts === 1) {
     state.consecutiveCorrect = (state.consecutiveCorrect || 0) + 1;
     if (state.consecutiveCorrect > (state.maxConsecutiveCorrect || 0)) state.maxConsecutiveCorrect = state.consecutiveCorrect;
   } else state.consecutiveCorrect = 0;
-  scheduleSRSAfterAnswer(qid, correct, state.confidence[qid]);
+  scheduleSRSAfterAnswer(qid, totalAttempts === 1, state.confidence[qid]);
   saveState();
   checkAchievements(false);
+  renderQuiz();
+}
+
+function showMatchingFeedbackHint(qid, rightCount, total, attempts) {
+  const optionsEl = document.getElementById('options-' + qid);
+  if (!optionsEl) return;
+  let banner = optionsEl.querySelector('.match-hint-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.className = 'match-hint-banner attempt-banner';
+    optionsEl.appendChild(banner);
+  }
+  const surrenderBtn = attempts >= 2
+    ? '<button class="surrender-btn" onclick="surrenderMatching(' + qid + ')">🏳️ Tôi xin chịu thua, xem đáp án</button>'
+    : '';
+  banner.innerHTML = '<span>❌ Lần thử <strong>' + attempts + '</strong>: Đúng <strong>' + rightCount + '/' + total + '</strong> cặp. Hãy bỏ ghép và thử lại.</span>' + surrenderBtn;
+}
+
+function surrenderMatching(qid) {
+  if (!confirm('Xem đáp án và kết thúc? Câu này sẽ được tính là SAI.')) return;
+  const q = QUESTIONS.find(x => x.id === qid);
+  if (!q) return;
+  if (!state.attempts) state.attempts = {};
+  if (!state.attempts[qid]) state.attempts[qid] = { count: 0, gaveUp: false };
+  state.attempts[qid].gaveUp = true;
+  const now = Date.now();
+  const w = _qWork.matching[qid];
+  state.answered[qid] = {
+    selected: w ? w.pairs : {},
+    correct: false,
+    ts: now,
+    type: 'matching',
+    attempts: state.attempts[qid].count || 0,
+    wrongCount: state.attempts[qid].count || 0,
+    gaveUp: true
+  };
+  state.lastActivity = now;
+  state.consecutiveCorrect = 0;
+  scheduleSRSAfterAnswer(qid, false, state.confidence[qid]);
+  saveState();
   renderQuiz();
 }
 
@@ -2840,15 +3109,39 @@ function selectOption(qid, idx) {
     }
     return;
   }
+  if (state.answered[qid]) return; // already finished
+
   const correct = idx === q.correct;
+  if (!state.attempts) state.attempts = {};
+  if (!state.attempts[qid]) state.attempts[qid] = { wrongIndices: [], count: 0, gaveUp: false };
+  const att = state.attempts[qid];
+
+  if (!correct) {
+    // Wrong: record attempt, do NOT auto-reveal correct answer
+    if (!att.wrongIndices.includes(idx)) att.wrongIndices.push(idx);
+    att.count = (att.count || 0) + 1;
+    state.lastActivity = Date.now();
+    if (!state.firstStart) state.firstStart = state.lastActivity;
+    saveState();
+    renderQuiz();
+    return;
+  }
+
+  // Correct! Finalize the answer
   const now = Date.now();
-  state.answered[qid] = { selected: idx, correct, ts: now };
+  const totalAttempts = (att.count || 0) + 1; // include this correct click
+  state.answered[qid] = {
+    selected: idx,
+    correct: true,
+    ts: now,
+    attempts: totalAttempts,
+    wrongCount: att.count || 0
+  };
   state.lastActivity = now;
   if (!state.firstStart) state.firstStart = now;
-  // Track daily activity for streak
   recordDailyActivity();
-  // Update consecutive correct counter
-  if (correct) {
+  // Consecutive correct only counts if first try
+  if (totalAttempts === 1) {
     state.consecutiveCorrect = (state.consecutiveCorrect || 0) + 1;
     if (state.consecutiveCorrect > (state.maxConsecutiveCorrect || 0)) {
       state.maxConsecutiveCorrect = state.consecutiveCorrect;
@@ -2856,11 +3149,39 @@ function selectOption(qid, idx) {
   } else {
     state.consecutiveCorrect = 0;
   }
-  // Auto-schedule SRS based on confidence + correctness
-  scheduleSRSAfterAnswer(qid, correct, state.confidence[qid]);
+  // SRS: treat as "answered correctly after N attempts" — lower the rating
+  const adjustedCorrect = totalAttempts === 1;  // first try: correct, else as if wrong
+  scheduleSRSAfterAnswer(qid, adjustedCorrect, state.confidence[qid]);
   saveState();
-  // Check achievements (silent in mock; with toast in quiz mode)
   checkAchievements(false);
+  renderQuiz();
+}
+
+function surrenderQuestion(qid) {
+  if (!confirm('Xem đáp án và kết thúc câu này? Câu sẽ được tính là SAI để bạn ôn lại sau.')) return;
+  const q = QUESTIONS.find(x => x.id === qid);
+  if (!q) return;
+  if (!state.attempts) state.attempts = {};
+  if (!state.attempts[qid]) state.attempts[qid] = { wrongIndices: [], count: 0, gaveUp: false };
+  state.attempts[qid].gaveUp = true;
+  const now = Date.now();
+  // Mark as answered with wrong (use last wrong attempt or -1)
+  const lastWrong = state.attempts[qid].wrongIndices.length > 0
+    ? state.attempts[qid].wrongIndices[state.attempts[qid].wrongIndices.length - 1]
+    : -1;
+  state.answered[qid] = {
+    selected: lastWrong,
+    correct: false,
+    ts: now,
+    attempts: state.attempts[qid].count || 0,
+    wrongCount: state.attempts[qid].count || 0,
+    gaveUp: true
+  };
+  state.lastActivity = now;
+  state.consecutiveCorrect = 0;
+  // SRS: lapse
+  scheduleSRSAfterAnswer(qid, false, state.confidence[qid]);
+  saveState();
   renderQuiz();
 }
 
@@ -3392,7 +3713,11 @@ function renderStats() {
     "Nhóm 4 — Nghiệp vụ nâng cao (senior key user)": ["O2. Mua hàng nâng cao", "P2. Kho hàng nâng cao", "Q2. Quản trị Chất lượng nâng cao", "R2. Bán hàng nâng cao", "S2. Kế toán Căn bản nâng cao"],
     "Nhóm 5 — Kỹ năng Workshop ERP Consultant": ["T. Kỹ năng Workshop ERP Consultant"],
     "Nhóm 6 — Dạng câu hỏi nâng cao": ["U. Nâng cao — Dạng câu hỏi mới"],
-    "Nhóm 7 — BC 2026 / Copilot / Fabric / Power Platform": ["V. Copilot & AI trong BC", "W. Microsoft Fabric & Analytics", "X. BC 2026 Release Updates", "Y. E-invoice VN 2026 & Localization", "Z. Power Platform & Integration", "AA. AL Extension & Modern Dev"]
+    "Nhóm 7 — BC 2026 / Copilot / Fabric / Power Platform": ["V. Copilot & AI trong BC", "W. Microsoft Fabric & Analytics", "X. BC 2026 Release Updates", "Y. E-invoice VN 2026 & Localization", "Z. Power Platform & Integration", "AA. AL Extension & Modern Dev"],
+    "Nhóm 8 — Retail Industry Practice": (() => {
+      // Dynamically collect all Z*. Retail sections present in QUESTIONS
+      return [...new Set(QUESTIONS.filter(q => q.section && q.section.match(/^Z\d/) && q.section.includes('Retail')).map(q => q.section))].sort();
+    })()
   };
 
   // Confidence-vs-accuracy breakdown
@@ -3518,6 +3843,8 @@ const ADMIN_EMAIL = "notabin@gmail.com";
 
 async function initApp() {
   await loadState();
+  // Merge Retail questions into QUESTIONS array (from data/retail.js)
+  mergeRetailQuestions();
   // Load question overrides from Firestore (silently fail if no permission)
   try { await loadQuestionOverrides(); } catch (e) {}
   renderQuiz();
@@ -3709,7 +4036,7 @@ async function logout() {
   // Reset state
   state = {
     answered: {}, bookmarks: {}, bookmarkFolders: { "Đã đánh dấu": [] },
-    notes: {}, confidence: {}, srs: {}, mockExamHistory: [],
+    notes: {}, confidence: {}, srs: {}, mockExamHistory: [], attempts: {},
     dailyActivity: {}, achievements: {}, consecutiveCorrect: 0, maxConsecutiveCorrect: 0,
     team: '',
     currentIdx: 0, filter: "all",
@@ -5615,6 +5942,112 @@ function renderGlossaryList() {
       ${g.example ? '<div class="gi-example">💡 ' + escapeHtml(g.example) + '</div>' : ''}
     </div>
   `).join('');
+}
+
+// ============ RETAIL PRACTICE ============
+function mergeRetailQuestions() {
+  if (!window.RETAIL_DATA || !window.RETAIL_DATA.questions) return;
+  if (window._retailMerged) return;
+  const existingIds = new Set(QUESTIONS.map(q => q.id));
+  window.RETAIL_DATA.questions.forEach(q => {
+    if (!existingIds.has(q.id)) QUESTIONS.push(q);
+  });
+  QUESTIONS.sort((a, b) => a.id - b.id);
+  window._retailMerged = true;
+  _searchIndex = null;
+  if (window._QUESTIONS_BASE) {
+    const baseIds = new Set(window._QUESTIONS_BASE.map(q => q.id));
+    window.RETAIL_DATA.questions.forEach(q => {
+      if (!baseIds.has(q.id)) window._QUESTIONS_BASE.push(q);
+    });
+    window._QUESTIONS_BASE.sort((a, b) => a.id - b.id);
+  }
+}
+
+function chapterAnchorId(idx) { return 'retail-chapter-' + idx; }
+
+function renderRetail() {
+  const panel = document.getElementById('retail');
+  const data = window.RETAIL_DATA;
+  if (!data || !data.theory) {
+    panel.innerHTML = '<div class="srs-empty">⚠️ Không tải được nội dung Retail (data/retail.js).</div>';
+    return;
+  }
+  const theory = data.theory;
+  const totalQuestions = (data.questions || []).length;
+
+  panel.innerHTML = `
+    <div class="retail-intro">
+      <h2>🏪 Retail Industry Practice</h2>
+      <p>Giáo trình Bán lẻ &amp; CNTT Bán lẻ — ${theory.length} chương, từ định nghĩa Retailing đến các hệ thống IT (POS, MMS, WMS, Data Warehouse, CRM). Đọc lý thuyết, sau đó luyện ${totalQuestions} câu hỏi tương ứng.</p>
+    </div>
+
+    <div class="retail-toc">
+      <h3>📑 MỤC LỤC</h3>
+      <div class="retail-toc-list">
+        ${theory.map((ch, i) => '<a onclick="scrollToRetailChapter(' + i + ')">' + escapeHtml(ch.title) + '</a>').join('')}
+      </div>
+      <div style="margin-top:10px; font-size:12px; color:var(--text-muted);">💡 Click vào chương để mở/đóng. Cuối mỗi chương có nút "Bắt đầu luyện" để filter câu hỏi tương ứng.</div>
+    </div>
+
+    ${theory.map((ch, i) => `
+      <div class="retail-chapter" id="${chapterAnchorId(i)}">
+        <div class="retail-chapter-head" onclick="toggleRetailChapter(${i})">
+          <span>${escapeHtml(ch.title)}</span>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div class="retail-chapter-body">
+          ${ch.sections.map(sec => `
+            <div class="retail-section">
+              <h4>${escapeHtml(sec.title)}</h4>
+              ${sec.paras.map(para => '<p>' + highlightGlossaryTerms(escapeHtml(para)) + '</p>').join('')}
+            </div>
+          `).join('')}
+          ${(() => {
+            const m = ch.title.match(/CHƯƠNG (\d+)/);
+            if (!m) return '';
+            const chNum = m[1];
+            const label = 'Z' + chNum + '.';
+            const count = (data.questions || []).filter(q => q.section && q.section.startsWith(label)).length;
+            if (count === 0) return '';
+            return `
+              <div class="retail-cta">
+                <span style="flex:1; font-size:13px;">📝 Có <strong>${count} câu hỏi luyện tập</strong> cho chương này.</span>
+                <button onclick="practiceRetailChapter('${label}')">Bắt đầu luyện ${count} câu →</button>
+              </div>
+            `;
+          })()}
+        </div>
+      </div>
+    `).join('')}
+
+    <div style="background:var(--blue-bg); border-radius:8px; padding:14px; margin-top:14px; font-size:13px;">
+      <strong>💡 Mẹo học hiệu quả:</strong><br>
+      1️⃣ Đọc lý thuyết chương → 2️⃣ Click "Bắt đầu luyện" → 3️⃣ Sai đáp án, hệ thống KHÔNG tự hiện đáp án — bạn có cơ hội thử lại → 4️⃣ Sau ≥2 lần sai, có nút "Tôi xin chịu thua".
+    </div>
+  `;
+}
+
+function toggleRetailChapter(idx) {
+  const el = document.getElementById(chapterAnchorId(idx));
+  if (el) el.classList.toggle('open');
+}
+
+function scrollToRetailChapter(idx) {
+  const el = document.getElementById(chapterAnchorId(idx));
+  if (!el) return;
+  el.classList.add('open');
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function practiceRetailChapter(label) {
+  const match = QUESTIONS.find(q => q.section && q.section.startsWith(label));
+  if (!match) { alert('Không tìm thấy câu hỏi cho chương này.'); return; }
+  state.filter = match.section;
+  state.currentIdx = 0;
+  saveState();
+  document.querySelector('[data-tab="quiz"]').click();
+  renderQuiz();
 }
 
 // ============ STREAK & ACHIEVEMENTS ============
