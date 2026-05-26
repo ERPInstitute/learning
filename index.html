@@ -2268,8 +2268,7 @@
   <div class="menu-group">
     <button class="menu-trigger" data-group="library"><span class="label-icon">📖</span><span class="label-text">Tài liệu</span> <span class="chev">▼</span></button>
     <div class="menu-dropdown">
-      <button class="menu-item tab-btn" data-tab="cases"><span class="icon">💼</span><span>Tình huống</span></button>
-      <button class="menu-item tab-btn" data-tab="advanced"><span class="icon">🎯</span><span>Nâng cao</span></button>
+      <button class="menu-item tab-btn" data-tab="cases"><span class="icon">💼</span><span>Tình huống &amp; Nâng cao</span></button>
       <button class="menu-item tab-btn" data-tab="gotchas"><span class="icon">⚠️</span><span>Gotchas</span></button>
       <button class="menu-item tab-btn" data-tab="workshop"><span class="icon">📋</span><span>Workshop</span></button>
       <button class="menu-item tab-btn" data-tab="retail"><span class="icon">🏪</span><span>Retail</span></button>
@@ -2482,7 +2481,8 @@ const CASES = [
 <li>Customer master: custom Email khẩn cấp + Phone hotline.</li>
 <li>Workflow approval cho PO NK yêu cầu attach C/O + CoA.</li>
 <li>Job Queue định kỳ chạy report Items Expiring Soon.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Trong recall lô SS2026-0312, các bước Item Tracing BC nào cần chạy? (Chọn nhiều)", "options": ["Item Tracing với Lot No. = SS2026-0312, Trace Method = Usage → Origin", "Item Tracing với Trace Method = Origin → Usage (downstream)", "Item Ledger Entries filter Lot No. SS2026-0312", "Adjust Cost — Item Entries để xoá lô khỏi tồn kho", "Sales Return Order cho từng khách với Item Tracking gán Lot", "Tạo Production Order mới để thay thế"], "correct": [0, 1, 2, 4], "exp": "Trace 2 chiều (upstream + downstream) + ILE cross-check + Sales Return cho thu hồi. D/F sai vì Adjust Cost không xoá lô và Production Order không liên quan recall."}]
   },
   { id: 2, title: "Cận date dồn ứ FMCG",
     context: "Cuối tháng, báo cáo cho thấy 15% giá trị tồn kho đang trong vùng \"còn <30 ngày HSD\". Doanh thu giảm. Sếp yêu cầu giải pháp.",
@@ -2515,7 +2515,8 @@ const CASES = [
 <li>Cải thiện forecast: Sales History → đặt lại RP/RQ trên SKU.</li>
 <li>Vendor agreement: trả lại NSX % hàng cận date.</li>
 <li>KPI Buyer: "Expiry Write-off %" target < 1% doanh thu.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Với hàng cận date FMCG (HSD < 90 ngày), BC giải pháp nào hợp lý? (Chọn nhiều)", "options": ["Setup Item Category với Expiration Calculation", "FEFO picking dựa vào Expiration Date trong Lot", "Sale Discount theo Item + Expiration", "Tự động write-off khi hết HSD (Item Adjustment Negative)", "Allowance for Inventory Loss (TT 48/2019) cho lô cận date", "Bỏ qua, để bán bình thường"], "correct": [0, 1, 2, 3, 4], "exp": "Tất cả 5 đầu là giải pháp hợp lệ. F sai — phải có quy trình rõ ràng cho hàng cận date."}]
   },
   { id: 3, title: "Đa kênh: MT / GT / Online",
     context: "Công ty phân phối có: (a) Siêu thị/MT (50 khách lớn): công nợ 45 ngày, giá list -8%, rebate cuối quý 2%, EDI nhận PO. (b) Tạp hóa/GT (3,000 khách nhỏ): COD/7 ngày, giá list, ship phí <5tr. (c) Online (Shopee/TikTok): giá riêng, hoàn tiền nhiều, đối soát phí sàn.",
@@ -2556,7 +2557,8 @@ const CASES = [
 <ul>
 <li>Account Schedule filter Dimension CHANNEL → P&L từng kênh.</li>
 <li>Power BI dashboard realtime.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Pricing đa kênh MT/GT/Online — setup BC đúng? (Chọn nhiều)", "options": ["Customer Price Group khác nhau cho MT vs GT vs Online", "Sales Price Lists riêng cho từng kênh", "Use cùng 1 price cho tất cả channel — đơn giản hơn", "Discount Group + Line Discount theo channel", "Channel = Dimension để phân tích P&L theo kênh", "Hard-code giá vào Item Card"], "correct": [0, 1, 3, 4], "exp": "Customer Price Group + Sales Price List + Discount Group + Dimension là 4 cách phổ biến. C sai vì khác kênh thường khác giá. F sai vì không scalable."}]
   },
   { id: 4, title: "Kho lạnh đa zone với picking FEFO",
     context: "Kho 5,000m² gồm Zone Ambient, Chill 2–8°C, Frozen -18°C, Quarantine. Pickers dùng RF gun. Yêu cầu: FEFO, không pick nhầm zone, batch picking theo route.",
@@ -2593,7 +2595,8 @@ const CASES = [
 <li>Get Source/Warehouse Documents pull nhiều đơn.</li>
 <li>Calculate Pick → 1 Warehouse Pick gom nhiều SO, sort Bin Ranking.</li>
 <li>Picker 1 vòng pick gom; sort wall phân tách theo Order.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Kho lạnh đa zone (Freeze/Chill/Ambient) với FEFO — yêu cầu BC? (Chọn nhiều)", "options": ["Bin Mandatory bật ở Location", "Bin có Zone Code (Freeze/Chill/Ambient)", "Item Tracking với Lot + Expiration Date", "Pick Worksheet/Pick List dùng FEFO", "Tất cả item dùng cùng 1 bin để đơn giản", "Warehouse Class match Item Class (cho put-away đúng zone)"], "correct": [0, 1, 2, 3, 5], "exp": "Bin + Zone + Tracking + FEFO + Warehouse Class. E sai vì khác zone phải khác bin."}]
   },
   { id: 5, title: "Van Sales / Route Accounting",
     context: "30 xe tải nhỏ chở hàng đi tuyến mỗi ngày, mỗi xe phục vụ 50–80 cửa hàng. Tài xế kiêm bán hàng + thu tiền. Cuối ngày về kho cân hàng còn lại, nộp tiền.",
@@ -2627,7 +2630,8 @@ const CASES = [
 <li>Offline-first.</li>
 <li>Sync theo batch hoặc khi về kho.</li>
 <li>Item + Lot + Expiration + Customer + Price List sync xuống mobile.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Van Sales / Route Accounting cho >20 xe — BC core đủ hay cần ISV? (Chọn nhiều)", "options": ["BC core ĐỦ cho Van Sales >20 xe", "Cần ISV như Naviworld FMCG, Sana FMCG, Tasklet", "Mobile app cho salesman trên xe là requirement", "Inventory per Van = 1 sub-location trong BC", "Settlement cuối ngày: tồn xe + bán/nhập = phải khớp", "Pricing trên Van app phải sync với BC"], "correct": [1, 2, 3, 4, 5], "exp": "BC core KHÔNG đủ cho Van Sales — cần ISV chuyên ngành. Còn lại đều là requirement đúng."}]
   },
   { id: 6, title: "Tài chính: Hàng nhập khẩu + Landed Cost",
     context: "Nhập 1 container sữa từ New Zealand. PO USD 100,000. Chi phí phát sinh: Cước biển USD 3,500; Customs broker 5tr VND; Thuế NK 10% CIF; VAT NK 10%; Phí kiểm dịch 2tr VND.",
@@ -2661,7 +2665,8 @@ const CASES = [
 <li>BC convert USD → VND theo Currency Exchange Rate ngày Receipt (cost) và ngày Invoice (AP).</li>
 <li>Chênh lệch: Exchange Rate Gain/Loss khi Adjust Exchange Rates job chạy hoặc post Invoice.</li>
 <li>Item Cost lock theo Receipt date + adjusted khi có Invoice.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Landed Cost cho hàng nhập khẩu — các chi phí nào CỘNG vào nguyên giá hàng? (Chọn nhiều)", "options": ["Giá FOB từ vendor", "Vận chuyển quốc tế (Freight)", "Bảo hiểm vận chuyển (Insurance)", "Thuế nhập khẩu (Import Duty)", "VAT nhập khẩu (được khấu trừ — KHÔNG cộng vào cost)", "Phí kho ngoại quan tạm thời", "Lương kế toán xử lý chứng từ"], "correct": [0, 1, 2, 3, 5], "exp": "Item Charge gồm Freight, Insurance, Duty, Storage. VAT NK được khấu trừ → không cộng. Lương kế toán là OpEx, không phải cost của hàng."}]
   }
 ];
 
@@ -2696,7 +2701,8 @@ const ADVANCED_CASES = [
 <ul>
 <li>Cost output = cost components phân bổ theo Quantity per Assembly + Assembly Overhead.</li>
 <li>Ví dụ: 10 tấn × 20,000/kg = 200M → phân bổ tỉ lệ vào 10,000 gói 500g + 4,000 gói 1kg + 200 gói 5kg.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Repack lô lớn 10 tấn thành 3 SKU bán lẻ — BC giải pháp đúng? (Chọn nhiều)", "options": ["Assembly Order với component (lô gốc) + output (3 SKU)", "Production Order nếu cần routing + labor cost", "Item Tracking Lines gán Lot cho component + output", "Item Tracing để truy ngược lô con → lô gốc", "Cost output = cost components phân bổ theo Quantity per Assembly", "Đơn giản chỉ cần Item Reclassification"], "correct": [0, 1, 2, 3, 4], "exp": "Assembly/Production + Item Tracking + Tracing + Cost flow đầy đủ. F sai vì Item Reclass không đủ cho repack với cost split."}]
   },
   { id: 8, title: "QC Hold workflow với phê duyệt nhiều cấp",
     context: "Hàng nhập về phải qua QC trước khi sellable. Yêu cầu: (1) tự động đặt hàng vào QA-HOLD bin khi receive; (2) QC Inspector test → upload CoA; (3) QC Manager review → Pass/Fail; (4) Pass → release sang Sellable Bin; (5) Fail → quarantine + claim vendor; (6) audit trail.",
@@ -2731,7 +2737,8 @@ const ADVANCED_CASES = [
 <li>Move lô QA-FAIL → return to vendor.</li>
 <li>Vendor Claim record (custom): Lot, lý do, evidence, status (Submitted/Accepted/Rejected/Settled).</li>
 <li>Vendor accept → Purchase Credit Memo giảm AP.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "QC Hold workflow nhiều cấp — BC capabilities? (Chọn nhiều)", "options": ["Default Bin code = QA-HOLD khi receive", "Approval Workflow cho QC Test → QC Manager Review", "Document Attachment upload CoA trên Lot Information Card", "Movement Worksheet release sang Sellable Bin sau Pass", "Sales Return + Vendor Claim cho lô Fail", "Bỏ qua QC, để khách phát hiện rồi return"], "correct": [0, 1, 2, 3, 4], "exp": "Default Bin + Workflow + Doc Attach + Movement Worksheet + Sales Return là full QC workflow. F là anti-pattern."}]
   },
   { id: 9, title: "Tem niêm phong / Serialization rượu NK",
     context: "Công ty nhập khẩu rượu vang. Quy định VN: mỗi chai phải có tem điện tử Bộ Tài chính + tem nhập khẩu Hải quan. Phải track từng chai (serial) suốt vòng đời. Khi bán xuất được số tem chi tiết. Tem phát theo lô từ cơ quan thuế.",
@@ -2765,7 +2772,8 @@ const ADVANCED_CASES = [
 <ul>
 <li>Custom report: tổng tem nhận – tem dán – tem bán – tem tồn.</li>
 <li>Báo cáo định kỳ theo Thông tư Bộ Tài chính quản lý tem.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Tem niêm phong + Serialization rượu nhập khẩu — yêu cầu BC + Localization? (Chọn nhiều)", "options": ["Item Tracking với Serial No. Specific Tracking", "Tem Tổng cục Hải quan cho rượu nhập khẩu", "Mỗi chai = 1 Serial No. unique", "Serial No. Information Card lưu chứng từ liên quan", "Tracking quá phức tạp, dùng Lot là đủ", "Hệ thống tem điện tử kết nối Tổng cục Thuế"], "correct": [0, 1, 2, 3, 5], "exp": "Serial Tracking cho từng chai + tem TCHQ + Serial Info Card + tem điện tử. E sai vì rượu là item cần truy xuất từng chai."}]
   },
   { id: 10, title: "Consignment Inventory tại Customer (hàng ký gửi)",
     context: "Công ty ký hợp đồng ký gửi với 5 siêu thị: hàng để tại kho siêu thị nhưng vẫn thuộc sở hữu công ty. Doanh thu chỉ ghi nhận khi siêu thị bán cho người tiêu dùng (báo cáo cuối tuần). Tồn kho tại siêu thị vẫn trên báo cáo công ty.",
@@ -2800,7 +2808,8 @@ const ADVANCED_CASES = [
 <li>Lịch kiểm kê hàng tháng tại từng siêu thị.</li>
 <li>Hợp đồng quy định trách nhiệm mất mát.</li>
 <li>Insurance cho hàng consignment giá trị lớn.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Consignment Inventory (hàng ký gửi tại khách) — accounting treatment đúng? (Chọn nhiều)", "options": ["Vẫn ghi nhận trên BS doanh nghiệp gửi (consignor)", "Không ghi Sales khi giao hàng — chỉ ghi khi khách báo cáo đã bán", "Phân biệt với Sales bằng Location = CONSIGNMENT", "Item Tracking cần track từng lô tại customer location", "Khách (consignee) ghi vào BS của họ ngay khi nhận", "Khi consignee báo cáo bán → ghi Sales Order + Invoice"], "correct": [0, 1, 2, 3, 5], "exp": "Consignment vẫn thuộc Consignor — chỉ ghi Sales khi consignee sell-through. E sai — consignee KHÔNG ghi vào BS."}]
   },
   { id: 11, title: "Vendor Managed Inventory (VMI)",
     context: "Công ty là đại lý phân phối lớn của Unilever. Unilever yêu cầu mô hình VMI: Unilever tự theo dõi tồn kho tại kho của đại lý và chủ động bổ sung hàng. Đại lý chỉ trả tiền khi tồn kho đã tiêu thụ thực sự (settlement hàng tuần).",
@@ -2833,7 +2842,8 @@ const ADVANCED_CASES = [
 <li>Phương án 1 (consignment): cuối tuần Sales Report → Unilever invoice.</li>
 <li>Phương án 2 (PO + automated): payment theo Payment Terms PO.</li>
 <li>Trade Promotion accrual giảm trừ vào invoice định kỳ.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Vendor Managed Inventory (VMI) — đặc điểm? (Chọn nhiều)", "options": ["Vendor responsible cho replenishment, không phải DN mua", "DN mua share visibility tồn kho + sales data cho vendor", "Tồn kho có thể vẫn thuộc vendor (consignment-style) HOẶC thuộc DN mua", "Vendor có quyền tự đặt PO replenishment thay DN mua", "EDI hoặc API integration cho real-time data share", "BC core đủ — không cần ISV / integration", "VMI giảm stock-out, giảm safety stock cho DN mua"], "correct": [0, 1, 2, 3, 4, 6], "exp": "VMI = vendor takes responsibility + data sharing. F sai vì cần integration để share data real-time."}]
   },
   { id: 12, title: "Kho ngoại quan (Bonded Warehouse)",
     context: "Công ty nhập khẩu thực phẩm chức năng. Lượng tồn lớn, dòng tiền thuế NK/VAT chiếm nhiều vốn lưu động. Quyết định thuê kho ngoại quan: hàng chưa thông quan = chưa nộp thuế NK/VAT, chỉ khi rút hàng ra mới nộp.",
@@ -2867,7 +2877,8 @@ const ADVANCED_CASES = [
 <li>Custom field trên Lot/Receipt: Bonded Entry Date, Bonded Expiry = Entry + 12M.</li>
 <li>Job Queue đêm: report list hàng sắp hết hạn → email cảnh báo.</li>
 <li>Quá hạn: bắt buộc thông quan hoặc tái xuất trong 30 ngày, không thì hải quan tịch thu.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Kho ngoại quan (Bonded Warehouse) cho hàng NK — đặc điểm? (Chọn nhiều)", "options": ["Hàng chưa nộp thuế NK + VAT NK", "Có thể tái xuất không nộp thuế (re-export)", "Khi xuất kho vào nội địa → phải nộp thuế đầy đủ", "BC setup: Location riêng \"BONDED\" với accounting treatment khác", "Thời hạn lưu kho ngoại quan giới hạn theo luật (thường 12 tháng)", "Hàng kho ngoại quan ghi vào Revenue ngay khi nhập kho", "Cần permit + giám sát của Hải quan"], "correct": [0, 1, 2, 3, 4, 6], "exp": "Bonded Warehouse = chưa nộp thuế, có thể tái xuất, BC dùng Location riêng. F sai — chưa Revenue cho đến khi bán/tái xuất."}]
   },
   { id: 13, title: "Cross-docking 100% cho khách lớn",
     context: "Big M đặt hàng định kỳ volume lớn: mỗi thứ Hai, thứ Năm có 1 chuyến container. Để giảm chi phí lưu kho, áp dụng cross-docking 100%: hàng từ nhà máy về sáng → chiều đi thẳng đến Big M, không lưu kho.",
@@ -2904,7 +2915,8 @@ const ADVANCED_CASES = [
 <li>Lab test → fail-fast: chỉ release qty pass.</li>
 <li>Vendor có Quality Agreement: pre-test trước giao, kèm CoA.</li>
 <li>Workflow: vendor "Trusted Vendor" flag → skip QC; vendor mới phải QC đầy đủ.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Cross-docking 100% — đặc điểm và yêu cầu BC? (Chọn nhiều)", "options": ["Hàng vào kho → ra kho ngay trong ngày, không lưu", "Receive → Pick → Ship trong vài giờ", "BC Inbound + Outbound Order Line link trực tiếp (cross-dock policy)", "Yêu cầu coordination chặt giữa Inbound + Outbound team", "Phù hợp cho khách lớn có volume cao + lead time ngắn", "Tăng tồn kho trung bình", "Pre-allocate Pick từ Inbound đến Outbound order ngay khi receive"], "correct": [0, 1, 2, 3, 4, 6], "exp": "Cross-docking = không lưu, link Inbound-Outbound. F sai — ngược lại, GIẢM tồn kho trung bình."}]
   },
   { id: 14, title: "Đóng kỳ + Inventory Revaluation cuối năm",
     context: "Năm tài chính kết thúc 31/12. Kế toán trưởng yêu cầu: tất cả Inventory Value khớp G/L; tính Inventory Aging; revalue lô hàng cận date theo NRV theo VAS 02; chuẩn bị số liệu kiểm toán.",
@@ -2946,7 +2958,8 @@ const ADVANCED_CASES = [
 <li>Revaluation Journal posting history.</li>
 <li>G/L Inventory account ledger reconcile đến subledger.</li>
 <li>Cycle Count records từ Counting Period.</li>
-</ul>`
+</ul>`,
+    quickCheck: [{"q": "Đóng kỳ năm + Inventory Revaluation cuối năm — bước nào CẦN? (Chọn nhiều)", "options": ["Physical Count toàn bộ kho 31/12", "Adjust Cost — Item Entries trước khi Post Inventory Cost to G/L", "Inventory Valuation Report so với G/L Inventory Account", "Allowance for Inventory Loss (TT 48/2019) cho hàng tổn thất", "Revaluation Journal cho item có giá thay đổi material", "Khi count chênh lệch — Physical Inventory Journal điều chỉnh", "Skip Adjust Cost vì cuối năm rồi", "CFO sign-off Inventory Reconciliation Report"], "correct": [0, 1, 2, 3, 4, 5, 7], "exp": "Đầy đủ inventory close-out steps. G sai — bắt buộc Adjust Cost trước Post to G/L."}]
   }
 ];
 
@@ -4237,10 +4250,30 @@ function saveNote(qid) {
 }
 
 // ============ CASES ============
-function renderCases(panelId, cases) {
+// Render merged cases (Tình huống + Nâng cao) in a single tab with sections
+function renderMergedCases() {
+  const panel = document.getElementById('cases');
+  if (!panel) return;
+  panel.innerHTML = `
+    <div style="background:linear-gradient(135deg, #1F3864 0%, #2E5C9E 100%); color:#FFF; padding:14px 18px; border-radius:10px; margin-bottom:14px;">
+      <h2 style="margin:0 0 4px 0; color:#FFF;">💼 Tình huống &amp; Nâng cao</h2>
+      <p style="margin:0; font-size:13px; opacity:0.92;">${CASES.length} case cơ bản + ${ADVANCED_CASES.length} case nâng cao — mỗi case có: bối cảnh thực tế → tự viết câu trả lời → so với key points → tự chấm → bài kiểm tra nhanh (multi-choice) để verify hiểu thật.</p>
+    </div>
+    <h3 style="margin:14px 0 8px 0; color:#0E7490;">📘 Cơ bản — Tình huống thực tế (${CASES.length} cases)</h3>
+    <div id="cases-basic"></div>
+    <h3 style="margin:18px 0 8px 0; color:#7C3AED;">🎯 Nâng cao — Case phức tạp dành cho Senior (${ADVANCED_CASES.length} cases)</h3>
+    <div id="cases-advanced"></div>
+  `;
+  renderCases("cases-basic", CASES, "basic");
+  renderCases("cases-advanced", ADVANCED_CASES, "adv");
+}
+
+function renderCases(panelId, cases, prefix) {
   const panel = document.getElementById(panelId);
-  // Unique key per case: panelId-caseId to distinguish CASES vs ADVANCED_CASES (both may have same numeric id)
-  const caseKey = (c) => panelId + '-' + c.id;
+  if (!panel) return;
+  // Unique key per case — backward-compatible key with old "cases-N" / "advanced-N" format
+  const oldPrefix = prefix === "basic" ? "cases" : (prefix === "adv" ? "advanced" : panelId);
+  const caseKey = (c) => oldPrefix + '-' + c.id;
   panel.innerHTML = cases.map(c => {
     const key = caseKey(c);
     const assessment = (state.caseAssessments || {})[key];
@@ -4290,10 +4323,90 @@ function renderCases(panelId, cases) {
             ${assessment && typeof assessment.score === 'number' ? renderCaseScore(assessment.score, keyPoints.length, assessment.ratings) : ''}
           </div>
         </div>
+
+        ${c.quickCheck && c.quickCheck.length ? `
+          <div class="case-quickcheck" style="margin-top:14px; padding:14px; background:var(--blue-bg); border-left:4px solid var(--primary); border-radius:8px;">
+            <h4 style="margin:0 0 8px 0; color:var(--primary);">🎯 Bài kiểm tra nhanh — verify bạn đã hiểu thật (multi-choice, chọn TẤT CẢ đáp án đúng)</h4>
+            ${c.quickCheck.map((qc, qi) => renderQuickCheckQuestion(key, qi, qc)).join('')}
+          </div>
+        ` : ''}
       </div>
     </div>
   `;
   }).join("");
+}
+
+function renderQuickCheckQuestion(caseKey, qIdx, qc) {
+  const stateKey = caseKey + '_qc' + qIdx;
+  const saved = (state.caseQuickCheckAnswers || {})[stateKey];
+  const submitted = saved && saved.submitted;
+  const selectedArr = saved && saved.selected ? saved.selected : [];
+  const correctSet = new Set(qc.correct);
+  const selSet = new Set(selectedArr);
+  const isAllCorrect = submitted && correctSet.size === selSet.size && [...correctSet].every(i => selSet.has(i));
+  return `
+    <div class="case-qc-q" style="margin-top:10px; padding:10px; background:var(--card); border-radius:6px; border:1px solid var(--border);">
+      <div style="font-weight:600; margin-bottom:6px; font-size:13px;">Câu ${qIdx + 1}: ${escapeHtml(qc.q)}</div>
+      ${qc.options.map((opt, oi) => {
+        const isSelected = selSet.has(oi);
+        const isCorrect = correctSet.has(oi);
+        let bg = '';
+        let icon = '';
+        if (submitted) {
+          if (isSelected && isCorrect) { bg = 'background:#DCFCE7; border-color:#16A34A;'; icon = '✓ '; }
+          else if (isSelected && !isCorrect) { bg = 'background:#FEE2E2; border-color:#DC2626;'; icon = '✗ '; }
+          else if (!isSelected && isCorrect) { bg = 'background:#FEF3C7; border-color:#F59E0B;'; icon = '⚠️ '; }
+        } else if (isSelected) {
+          bg = 'background:var(--blue-bg); border-color:var(--primary);';
+        }
+        return `
+          <label class="case-qc-opt" style="display:block; padding:6px 10px; margin:4px 0; border:1px solid var(--border); border-radius:6px; cursor:${submitted ? 'default' : 'pointer'}; font-size:12px; ${bg}">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} ${submitted ? 'disabled' : ''}
+              onchange="toggleCaseQC('${stateKey}', ${oi}, this.checked)" style="margin-right:6px;">
+            ${icon}${escapeHtml(opt)}
+          </label>
+        `;
+      }).join('')}
+      ${!submitted ? `
+        <button onclick="submitCaseQC('${stateKey}', ${JSON.stringify(qc.correct)})" style="margin-top:8px; padding:6px 14px; background:var(--primary); color:white; border:none; border-radius:6px; cursor:pointer; font-size:12px;">✓ Nộp đáp án</button>
+      ` : `
+        <div style="margin-top:8px; padding:8px; background:${isAllCorrect ? '#DCFCE7' : '#FEE2E2'}; border-radius:6px; font-size:12px;">
+          <strong>${isAllCorrect ? '🎉 Đúng hoàn toàn!' : '❌ Chưa đầy đủ — xem lại'}</strong>
+          ${qc.exp ? '<div style="margin-top:4px; color:var(--text-muted); line-height:1.6;">' + escapeHtml(qc.exp) + '</div>' : ''}
+        </div>
+        <button onclick="resetCaseQC('${stateKey}')" style="margin-top:6px; padding:4px 10px; background:transparent; color:var(--text-muted); border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:11px;">🔁 Làm lại</button>
+      `}
+    </div>
+  `;
+}
+
+function toggleCaseQC(stateKey, optIdx, checked) {
+  if (!state.caseQuickCheckAnswers) state.caseQuickCheckAnswers = {};
+  if (!state.caseQuickCheckAnswers[stateKey]) state.caseQuickCheckAnswers[stateKey] = { selected: [], submitted: false };
+  const entry = state.caseQuickCheckAnswers[stateKey];
+  if (checked) {
+    if (!entry.selected.includes(optIdx)) entry.selected.push(optIdx);
+  } else {
+    entry.selected = entry.selected.filter(i => i !== optIdx);
+  }
+  saveState();
+}
+
+function submitCaseQC(stateKey, correct) {
+  if (!state.caseQuickCheckAnswers) state.caseQuickCheckAnswers = {};
+  if (!state.caseQuickCheckAnswers[stateKey]) state.caseQuickCheckAnswers[stateKey] = { selected: [], submitted: false };
+  state.caseQuickCheckAnswers[stateKey].submitted = true;
+  state.caseQuickCheckAnswers[stateKey].ts = Date.now();
+  saveState();
+  renderMergedCases();
+}
+
+function resetCaseQC(stateKey) {
+  if (state.caseQuickCheckAnswers && state.caseQuickCheckAnswers[stateKey]) {
+    delete state.caseQuickCheckAnswers[stateKey];
+    saveState();
+    renderMergedCases();
+  }
 }
 
 // Extract key points from case answer HTML (split by <li> elements + <h4> headers as natural points)
@@ -4888,8 +5001,7 @@ async function initApp() {
   try { await loadQuestionOverrides(); } catch (e) {}
   try { await loadPlaybookOverrides(); } catch (e) {}
   renderQuiz();
-  renderCases("cases", CASES);
-  renderCases("advanced", ADVANCED_CASES);
+  renderMergedCases();
   renderGotchas();
   renderWorkshop();
   updateSrsBadge();
@@ -7728,15 +7840,15 @@ function renderAccounting() {
     </div>
 
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:14px;">
-      <div style="background:linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%); border:2px solid #16A34A; border-radius:10px; padding:14px;">
-        <h3 style="margin:0 0 8px 0; color:#15803D;">🌱 CẤP ĐỘ 1 — KẾ TOÁN CĂN BẢN (AC1)</h3>
-        <p style="margin:0; font-size:13px;">Dành cho <strong>consultant non-accounting</strong> — Sales, Procurement, Warehouse, Manufacturing consultant cần đọc P&L/BS, hiểu posting trong BC, debug accountant complaint.</p>
-        <p style="margin:6px 0 0 0; font-size:12px; color:#15803D;"><strong>${basicChapters.length} chương · ${basicQs} câu hỏi</strong> · Difficulty ★★-★★★</p>
+      <div style="background:linear-gradient(135deg, #16A34A 0%, #15803D 100%); border:2px solid #15803D; border-radius:10px; padding:14px; color:#FFFFFF;">
+        <h3 style="margin:0 0 8px 0; color:#FFFFFF;">🌱 CẤP ĐỘ 1 — KẾ TOÁN CĂN BẢN (AC1)</h3>
+        <p style="margin:0; font-size:13px; color:#FFFFFF;">Dành cho <strong style="color:#FEF3C7;">consultant non-accounting</strong> — Sales, Procurement, Warehouse, Manufacturing consultant cần đọc P&L/BS, hiểu posting trong BC, debug accountant complaint.</p>
+        <p style="margin:6px 0 0 0; font-size:12px; color:#DCFCE7;"><strong style="color:#FFFFFF;">${basicChapters.length} chương · ${basicQs} câu hỏi</strong> · Difficulty ★★-★★★</p>
       </div>
-      <div style="background:linear-gradient(135deg, #F3E8FF 0%, #DDD6FE 100%); border:2px solid #7C3AED; border-radius:10px; padding:14px;">
-        <h3 style="margin:0 0 8px 0; color:#6D28D9;">⭐ CẤP ĐỘ 2 — KẾ TOÁN NÂNG CAO (AC2)</h3>
-        <p style="margin:0; font-size:13px;">Dành cho <strong>F&A specialist consultant</strong> — làm sâu module Finance, dual-report VAS/IFRS, lease, deferred tax, consolidation, transfer pricing.</p>
-        <p style="margin:6px 0 0 0; font-size:12px; color:#6D28D9;"><strong>${advancedChapters.length} chương · ${advancedQs} câu hỏi</strong> · Difficulty ★★★★-★★★★★</p>
+      <div style="background:linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); border:2px solid #6D28D9; border-radius:10px; padding:14px; color:#FFFFFF;">
+        <h3 style="margin:0 0 8px 0; color:#FFFFFF;">⭐ CẤP ĐỘ 2 — KẾ TOÁN NÂNG CAO (AC2)</h3>
+        <p style="margin:0; font-size:13px; color:#FFFFFF;">Dành cho <strong style="color:#FEF3C7;">F&A specialist consultant</strong> — làm sâu module Finance, dual-report VAS/IFRS, lease, deferred tax, consolidation, transfer pricing.</p>
+        <p style="margin:6px 0 0 0; font-size:12px; color:#F3E8FF;"><strong style="color:#FFFFFF;">${advancedChapters.length} chương · ${advancedQs} câu hỏi</strong> · Difficulty ★★★★-★★★★★</p>
       </div>
     </div>
 
@@ -9113,7 +9225,17 @@ function renderRoadmap() {
                 </div>
                 <div class="milestone-actions">
                   <button onclick="startMilestone(${pi}, ${mi})">
-                    ${p.complete ? '🔁 Ôn lại' : '▶️ Bắt đầu milestone'}
+                    ${(() => {
+                      if (p.complete) return '🔁 Ôn lại';
+                      if (m.isMockCheckpoint) return '🎯 Mở Mock Exam — ' + m.mockCount + ' câu × ' + m.mockMinutes + ' phút';
+                      if (m.isCaseMilestone) return '💼 Mở Case Studies (tự luận)';
+                      if (m.isPlaybookMilestone) return '💎 Đọc Cẩm nang Triển khai';
+                      if (m.isAxesMilestone) return '📊 Xem trang Cấp độ Consultant (radar 6 axes)';
+                      if (m.isHardMilestone) return '🔥 Xem Hard Accuracy ở trang Cấp độ';
+                      if (m.isRetentionMilestone) return '🧠 Xem Deep Retention ở trang Cấp độ';
+                      if (m.isContributeMilestone) return '⚙️ Mở Admin → Playbook Editor';
+                      return '▶️ Bắt đầu luyện câu hỏi';
+                    })()}
                   </button>
                 </div>
               </div>
