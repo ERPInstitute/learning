@@ -2274,6 +2274,7 @@
       <button class="menu-item tab-btn" data-tab="workshop"><span class="icon">📋</span><span>Workshop</span></button>
       <button class="menu-item tab-btn" data-tab="retail"><span class="icon">🏪</span><span>Retail</span></button>
       <button class="menu-item tab-btn" data-tab="manufacturing"><span class="icon">🏭</span><span>Manufacturing</span></button>
+      <button class="menu-item tab-btn" data-tab="accounting"><span class="icon">📊</span><span>Kế toán (2 cấp)</span></button>
       <button class="menu-item tab-btn" data-tab="playbook"><span class="icon">💎</span><span>Cẩm nang triển khai</span></button>
       <button class="menu-item tab-btn" data-tab="glossary"><span class="icon">📖</span><span>Thuật ngữ</span></button>
     </div>
@@ -2315,6 +2316,7 @@
   <div id="workshop" class="panel"></div>
   <div id="retail" class="panel"></div>
   <div id="manufacturing" class="panel"></div>
+  <div id="accounting" class="panel"></div>
   <div id="playbook" class="panel"></div>
   <div id="level" class="panel"></div>
   <div id="glossary" class="panel"></div>
@@ -2435,6 +2437,7 @@
 <script src="data/questions.js"></script>
 <script src="data/retail.js"></script>
 <script src="data/manufacturing.js"></script>
+<script src="data/accounting.js"></script>
 <script src="data/playbook.js"></script>
 <script>
 // ============ DATA ============
@@ -4689,6 +4692,12 @@ function renderStats() {
     })(),
     "Nhóm 9 — Manufacturing Industry Practice": (() => {
       return [...new Set(QUESTIONS.filter(q => q.section && q.section.match(/^M\d+\./) && q.section.includes('Mfg')).map(q => q.section))].sort();
+    })(),
+    "Nhóm 10 — Kế toán Căn bản (AC1)": (() => {
+      return [...new Set(QUESTIONS.filter(q => q.section && /^AC1\./.test(q.section)).map(q => q.section))].sort();
+    })(),
+    "Nhóm 11 — Kế toán Nâng cao (AC2)": (() => {
+      return [...new Set(QUESTIONS.filter(q => q.section && /^AC2\./.test(q.section)).map(q => q.section))].sort();
     })()
   };
 
@@ -4851,6 +4860,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     if (tab === "glossary") renderGlossary();
     if (tab === "retail") renderRetail();
     if (tab === "manufacturing") renderManufacturing();
+    if (tab === "accounting") renderAccounting();
     if (tab === "playbook") renderPlaybook();
     if (tab === "level") renderLevelAssessment();
     if (tab === "roadmap") renderRoadmap();
@@ -4873,6 +4883,7 @@ async function initApp() {
   // Merge Retail + Manufacturing questions into QUESTIONS array
   mergeRetailQuestions();
   mergeManufacturingQuestions();
+  mergeAccountingQuestions();
   // Load question + playbook overrides from Firestore (silently fail if no permission)
   try { await loadQuestionOverrides(); } catch (e) {}
   try { await loadPlaybookOverrides(); } catch (e) {}
@@ -7484,6 +7495,9 @@ function mergeRetailQuestions() {
 function mergeManufacturingQuestions() {
   mergeExternalQuestions(window.MFG_DATA, '_mfgMerged');
 }
+function mergeAccountingQuestions() {
+  mergeExternalQuestions(window.ACC_DATA, '_accMerged');
+}
 
 function chapterAnchorId(prefix, idx) { return prefix + '-chapter-' + idx; }
 
@@ -7656,6 +7670,119 @@ function practiceMfgChapter(label) {
   renderQuiz();
 }
 
+// ============ Accounting Practice — Basic (AC1) + Advanced (AC2) ============
+function renderAccounting() {
+  const panel = document.getElementById('accounting');
+  const data = window.ACC_DATA;
+  if (!data || !data.theory) {
+    panel.innerHTML = '<div class="srs-empty">⚠️ Không tải được nội dung Kế toán (data/accounting.js).</div>';
+    return;
+  }
+  const theory = data.theory;
+  const totalQuestions = (data.questions || []).length;
+
+  // Split into Basic (AC1) and Advanced (AC2) sections for clearer UX
+  const basicChapters = theory.filter(ch => /AC1\./.test(ch.title));
+  const advancedChapters = theory.filter(ch => /AC2\./.test(ch.title));
+  const basicQs = (data.questions || []).filter(q => /^AC1\./.test(q.section || '')).length;
+  const advancedQs = (data.questions || []).filter(q => /^AC2\./.test(q.section || '')).length;
+
+  const renderChapterBlock = (ch, globalIdx, levelPrefix, accentColor) => `
+    <div class="retail-chapter" id="acc-chapter-${globalIdx}">
+      <div class="retail-chapter-head" onclick="toggleAccChapter(${globalIdx})" style="background:linear-gradient(135deg, ${accentColor} 0%, #1F3864 100%);">
+        <span>${escapeHtml(ch.title)}</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="retail-chapter-body">
+        ${ch.sections.map(sec => `
+          <div class="retail-section">
+            <h4>${escapeHtml(sec.title)}</h4>
+            ${sec.paras.map(para => '<p>' + highlightGlossaryTerms(escapeHtml(para)) + '</p>').join('')}
+          </div>
+        `).join('')}
+        ${(() => {
+          const m = ch.title.match(/CHƯƠNG\s+(AC[12]\.\d+)/);
+          if (!m) return '';
+          const label = m[1];
+          const count = (data.questions || []).filter(q => q.section && q.section.startsWith(label)).length;
+          if (count === 0) return '';
+          return `
+            <div class="retail-cta" style="background:linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-left-color:${accentColor};">
+              <span style="flex:1; font-size:13px;">📝 Có <strong>${count} câu hỏi multi-choice</strong> cho chương này — chọn nhiều đáp án đúng.</span>
+              <button onclick="practiceAccChapter('${label}')" style="background:${accentColor};">Bắt đầu luyện ${count} câu →</button>
+            </div>
+          `;
+        })()}
+      </div>
+    </div>
+  `;
+
+  let globalIdx = 0;
+  const basicHtml = basicChapters.map(ch => renderChapterBlock(ch, globalIdx++, 'AC1', '#16A34A')).join('');
+  const advancedHtml = advancedChapters.map(ch => renderChapterBlock(ch, globalIdx++, 'AC2', '#7C3AED')).join('');
+
+  panel.innerHTML = `
+    <div class="retail-intro" style="background:linear-gradient(135deg, #16A34A 0%, #1F3864 100%);">
+      <h2>📊 Kế toán cho ERP Consultant — 2 cấp độ</h2>
+      <p>Bộ kiến thức kế toán thiết kế riêng cho consultant: ${theory.length} chương (${basicChapters.length} Cơ bản + ${advancedChapters.length} Nâng cao), ${totalQuestions} câu hỏi multi-choice (mỗi câu nhiều đáp án đúng để tránh đoán mò).</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:14px;">
+      <div style="background:linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%); border:2px solid #16A34A; border-radius:10px; padding:14px;">
+        <h3 style="margin:0 0 8px 0; color:#15803D;">🌱 CẤP ĐỘ 1 — KẾ TOÁN CĂN BẢN (AC1)</h3>
+        <p style="margin:0; font-size:13px;">Dành cho <strong>consultant non-accounting</strong> — Sales, Procurement, Warehouse, Manufacturing consultant cần đọc P&L/BS, hiểu posting trong BC, debug accountant complaint.</p>
+        <p style="margin:6px 0 0 0; font-size:12px; color:#15803D;"><strong>${basicChapters.length} chương · ${basicQs} câu hỏi</strong> · Difficulty ★★-★★★</p>
+      </div>
+      <div style="background:linear-gradient(135deg, #F3E8FF 0%, #DDD6FE 100%); border:2px solid #7C3AED; border-radius:10px; padding:14px;">
+        <h3 style="margin:0 0 8px 0; color:#6D28D9;">⭐ CẤP ĐỘ 2 — KẾ TOÁN NÂNG CAO (AC2)</h3>
+        <p style="margin:0; font-size:13px;">Dành cho <strong>F&A specialist consultant</strong> — làm sâu module Finance, dual-report VAS/IFRS, lease, deferred tax, consolidation, transfer pricing.</p>
+        <p style="margin:6px 0 0 0; font-size:12px; color:#6D28D9;"><strong>${advancedChapters.length} chương · ${advancedQs} câu hỏi</strong> · Difficulty ★★★★-★★★★★</p>
+      </div>
+    </div>
+
+    <div class="retail-toc">
+      <h3>📑 MỤC LỤC</h3>
+      <div class="retail-toc-list">
+        ${theory.map((ch, i) => '<a onclick="scrollToAccChapter(' + i + ')">' + escapeHtml(ch.title) + '</a>').join('')}
+      </div>
+      <div style="margin-top:10px; font-size:12px; color:var(--text-muted);">💡 Click chương để mở/đóng. Câu hỏi multi-choice — chọn TẤT CẢ đáp án đúng.</div>
+    </div>
+
+    <h3 style="margin-top:18px; color:#16A34A;">🌱 CẤP ĐỘ 1 — KẾ TOÁN CĂN BẢN (cho non-accounting consultant)</h3>
+    ${basicHtml}
+
+    <h3 style="margin-top:24px; color:#7C3AED;">⭐ CẤP ĐỘ 2 — KẾ TOÁN NÂNG CAO (cho F&A specialist)</h3>
+    ${advancedHtml}
+
+    <div style="background:var(--blue-bg); border-radius:8px; padding:14px; margin-top:14px; font-size:13px;">
+      <strong>💡 Mẹo học hiệu quả:</strong><br>
+      1️⃣ Đọc lý thuyết chương → 2️⃣ Click "Bắt đầu luyện" → 3️⃣ Multi-choice: chọn TẤT CẢ đáp án đúng (sai 1 = sai cả câu) → 4️⃣ Giải thích chi tiết từng đáp án A-G sau khi nộp.
+    </div>
+  `;
+}
+
+function toggleAccChapter(idx) {
+  const el = document.getElementById('acc-chapter-' + idx);
+  if (el) el.classList.toggle('open');
+}
+
+function scrollToAccChapter(idx) {
+  const el = document.getElementById('acc-chapter-' + idx);
+  if (!el) return;
+  el.classList.add('open');
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function practiceAccChapter(label) {
+  const match = QUESTIONS.find(q => q.section && q.section.startsWith(label));
+  if (!match) { alert('Không tìm thấy câu hỏi cho chương này.'); return; }
+  state.filter = match.section;
+  state.currentIdx = 0;
+  saveState();
+  document.querySelector('[data-tab="quiz"]').click();
+  renderQuiz();
+}
+
 // ============ PLAYBOOK / CẨM NANG TRIỂN KHAI ============
 function renderPlaybook() {
   const panel = document.getElementById('playbook');
@@ -7730,8 +7857,8 @@ const COMPETENCY_AXES = [
     desc: 'BC core features + Modern stack (Copilot, Fabric, AL) + Multi-choice depth (★★★★+)',
     sectionMatch: (s) => /^[A-F]\./.test(s) || /^[VWXYZ]\. /.test(s) || /^AA\./.test(s) || /^U\./.test(s) || /^AB\./.test(s) },
   { key: 'business', label: 'Business Acumen', icon: '💼',
-    desc: 'Nghiệp vụ thuần (Procurement, Warehouse, Quality, Sales, Accounting)',
-    sectionMatch: (s) => /^[OPQRS]\. /.test(s) || /^[OPQRS]2\./.test(s) },
+    desc: 'Nghiệp vụ thuần (Procurement, Warehouse, Quality, Sales, Accounting) + Kế toán chuyên sâu (AC1/AC2)',
+    sectionMatch: (s) => /^[OPQRS]\. /.test(s) || /^[OPQRS]2\./.test(s) || /^AC[12]\./.test(s) },
   { key: 'mapping', label: 'Mapping Skills', icon: '🌉',
     desc: 'Cầu nối nghiệp vụ ↔ ERP (Master Data, Warehouse, Planning, Pricing, Localization)',
     sectionMatch: (s) => /^[G-N]\./.test(s) },
@@ -7831,21 +7958,22 @@ const EXAM_TEMPLATES = {
   junior: {
     id: 'junior', name: 'Junior Consultant Certification',
     level: 1, icon: '🌱', color: '#94A3B8',
-    totalQuestions: 30, durationMinutes: 30, passThreshold: 0.6,
-    description: 'Đánh giá nền tảng: BC core + nghiệp vụ căn bản. Pass = đạt L1 Junior.',
+    totalQuestions: 33, durationMinutes: 35, passThreshold: 0.6,
+    description: 'Đánh giá nền tảng: BC core + nghiệp vụ căn bản + Kế toán căn bản. Pass = đạt L1 Junior.',
     buckets: [
       { label: 'BC Core (A-F)', match: s => /^[A-F]\./.test(s), count: 12, dr: [1, 3] },
       { label: 'Mapping (G-N)', match: s => /^[G-N]\./.test(s), count: 5, dr: [2, 3] },
       { label: 'Nghiệp vụ thuần (O-S)', match: s => /^[OPQRS]\. /.test(s), count: 8, dr: [1, 3] },
       { label: 'Workshop (T)', match: s => /^T\./.test(s), count: 3, dr: [2, 3] },
-      { label: 'Industry intro / Modern', match: s => /^[VWXYZ]\. |^AA\.|^Z\d|^M\d/.test(s), count: 2, dr: [2, 3] }
+      { label: 'Industry intro / Modern', match: s => /^[VWXYZ]\. |^AA\.|^Z\d|^M\d/.test(s), count: 2, dr: [2, 3] },
+      { label: 'Kế toán căn bản (AC1)', match: s => /^AC1\./.test(s), count: 3, dr: [2, 3] }
     ]
   },
   mid: {
     id: 'mid', name: 'Mid-Level Consultant Certification',
     level: 2, icon: '🚀', color: '#2E5C9E',
-    totalQuestions: 50, durationMinutes: 60, passThreshold: 0.7,
-    description: 'Đánh giá mid-level: design fit-gap, lead module project, mentor junior.',
+    totalQuestions: 55, durationMinutes: 65, passThreshold: 0.7,
+    description: 'Đánh giá mid-level: design fit-gap, lead module project, mentor junior + Kế toán căn bản chắc.',
     buckets: [
       { label: 'BC Core', match: s => /^[A-F]\./.test(s), count: 10, dr: [2, 4] },
       { label: 'Mapping skills', match: s => /^[G-N]\./.test(s), count: 10, dr: [3, 4] },
@@ -7853,14 +7981,15 @@ const EXAM_TEMPLATES = {
       { label: 'Nghiệp vụ nâng cao', match: s => /^[OPQRS]2\./.test(s), count: 8, dr: [3, 4] },
       { label: 'Workshop', match: s => /^T\./.test(s), count: 5, dr: [3, 4] },
       { label: 'Industry', match: s => /^Z\d|^M\d/.test(s), count: 6, dr: [3, 4] },
-      { label: 'Modern Stack', match: s => /^[VWXYZ]\. |^AA\./.test(s), count: 3, dr: [3, 4] }
+      { label: 'Modern Stack', match: s => /^[VWXYZ]\. |^AA\./.test(s), count: 3, dr: [3, 4] },
+      { label: 'Kế toán Căn bản (AC1)', match: s => /^AC1\./.test(s), count: 5, dr: [3, 4] }
     ]
   },
   senior: {
     id: 'senior', name: 'Senior Consultant Certification',
     level: 3, icon: '⭐', color: '#16A34A',
-    totalQuestions: 80, durationMinutes: 90, passThreshold: 0.75,
-    description: 'Đánh giá senior: cross-industry, solution architecture, mentor team.',
+    totalQuestions: 88, durationMinutes: 100, passThreshold: 0.75,
+    description: 'Đánh giá senior: cross-industry, solution architecture, mentor team + Kế toán nâng cao.',
     buckets: [
       { label: 'BC + Modern (deep)', match: s => /^[A-F]\./.test(s) || /^[VWXYZ]\. /.test(s) || /^AA\./.test(s), count: 18, dr: [3, 5] },
       { label: 'Mapping skills', match: s => /^[G-N]\./.test(s), count: 12, dr: [3, 4] },
@@ -7869,14 +7998,15 @@ const EXAM_TEMPLATES = {
       { label: 'Manufacturing', match: s => /^M\d/.test(s), count: 10, dr: [3, 4] },
       { label: 'Workshop facilitation', match: s => /^T\./.test(s), count: 8, dr: [3, 5] },
       { label: 'Kiến thức Tích hợp (AB)', match: s => /^AB\./.test(s), count: 8, dr: [4, 5] },
-      { label: 'Câu hỏi tổng hợp (U)', match: s => /^U\./.test(s), count: 4, dr: [3, 4] }
+      { label: 'Câu hỏi tổng hợp (U)', match: s => /^U\./.test(s), count: 4, dr: [3, 4] },
+      { label: 'Kế toán Nâng cao (AC2)', match: s => /^AC2\./.test(s), count: 8, dr: [4, 5] }
     ]
   },
   principal: {
     id: 'principal', name: 'Principal Consultant Certification',
     level: 4, icon: '👑', color: '#7C3AED',
-    totalQuestions: 100, durationMinutes: 120, passThreshold: 0.8,
-    description: 'Đánh giá Principal: strategic thinking, multi-industry mastery, methodology owner.',
+    totalQuestions: 110, durationMinutes: 135, passThreshold: 0.8,
+    description: 'Đánh giá Principal: strategic thinking, multi-industry mastery, methodology owner + Master kế toán.',
     buckets: [
       { label: 'BC + Modern Stack', match: s => /^[A-F]\./.test(s) || /^[VWXYZ]\. /.test(s) || /^AA\./.test(s), count: 22, dr: [4, 5] },
       { label: 'Mapping (deep)', match: s => /^[G-N]\./.test(s), count: 12, dr: [3, 5] },
@@ -7885,7 +8015,8 @@ const EXAM_TEMPLATES = {
       { label: 'Manufacturing', match: s => /^M\d/.test(s), count: 12, dr: [3, 5] },
       { label: 'Workshop L4', match: s => /^T\./.test(s), count: 10, dr: [4, 5] },
       { label: 'Kiến thức Master Level (AB)', match: s => /^AB\./.test(s), count: 15, dr: [4, 5] },
-      { label: 'Câu hỏi tổng hợp (U)', match: s => /^U\./.test(s), count: 5, dr: [4, 5] }
+      { label: 'Câu hỏi tổng hợp (U)', match: s => /^U\./.test(s), count: 5, dr: [4, 5] },
+      { label: 'Kế toán Master (AC1+AC2)', match: s => /^AC[12]\./.test(s), count: 10, dr: [4, 5] }
     ]
   }
 };
@@ -8692,7 +8823,11 @@ const LEARNING_PATHS = [
         sectionPrefix: '^[QRS]\\. ',
         description: 'QC vs QA, HACCP, GMP, Order-to-Cash, Accounting Equation, P&L vs BS.',
         targetAccuracy: 0.6, checkpoint: 'Phân biệt QC/QA, O2C/P2P, hiểu COGS calculation' },
-      { id: 'j-5', title: 'Milestone 1.5: First Mock Exam — Junior Level',
+      { id: 'j-5', title: 'Milestone 1.5: Kế toán Căn bản (AC1) — cho non-accounting consultant',
+        sectionPrefix: '^AC1\\.',
+        description: 'Đọc 12 chương AC1: phương trình kế toán, sổ kép, P&L vs BS, COGS, AR/AP, VAT, Period Close. Đủ để hiểu posting BC + debug khi accountant phàn nàn.',
+        targetAccuracy: 0.65, checkpoint: 'AC1 accuracy ≥65%, hiểu Debit/Credit + 3 báo cáo tài chính' },
+      { id: 'j-6', title: 'Milestone 1.6: First Mock Exam — Junior Level',
         sectionPrefix: null,
         description: 'Thi thử 30 câu trong 30 phút — phạm vi "Toàn bộ", target ≥60%.',
         targetAccuracy: 0.6, checkpoint: 'Mock Exam ≥60%, đủ điều kiện L1 Junior',
@@ -8720,7 +8855,11 @@ const LEARNING_PATHS = [
         sectionPrefix: null, customMatch: (s) => /^Z\d|^M\d/.test(s),
         description: 'Đọc lý thuyết 12 chương + làm câu hỏi của 1 trong 2 ngành. Trở thành specialist.',
         targetAccuracy: 0.65, checkpoint: 'Có thể consulting Pre-sales cho khách 1 ngành đã chọn' },
-      { id: 'm-5', title: 'Milestone 2.5: Mock Exam — Mid Level',
+      { id: 'm-5', title: 'Milestone 2.5: Kế toán Nâng cao (AC2) — option cho consultant đi sâu Finance',
+        sectionPrefix: '^AC2\\.',
+        description: 'IFRS 15 Revenue Recognition, Accrual/Deferral, FX gain/loss, Inventory advanced, Impairment, Lease IFRS 16, Deferred Tax, Consolidation, Transfer Pricing, Cost Accounting, VAS vs IFRS dual reporting. Optional cho consultant generalist nhưng REQUIRED cho F&A specialist.',
+        targetAccuracy: 0.65, checkpoint: 'AC2 accuracy ≥65% nếu chọn F&A specialty (optional cho khác)' },
+      { id: 'm-6', title: 'Milestone 2.6: Mock Exam — Mid Level',
         sectionPrefix: null,
         description: 'Thi thử 50 câu trong 60 phút — Toàn bộ, target ≥70%.',
         targetAccuracy: 0.7, checkpoint: 'Mock Exam ≥70%, đủ điều kiện L2 Mid-Level',
@@ -8752,7 +8891,11 @@ const LEARNING_PATHS = [
         sectionPrefix: '^AB\\.',
         description: 'Câu hỏi multi-choice ★★★★+ tổng hợp 25 chủ đề. Đo khả năng kết hợp kiến thức đa lĩnh vực.',
         targetAccuracy: 0.65, checkpoint: 'Hard Accuracy ≥50%, First-try ≥65%' },
-      { id: 's-6', title: 'Milestone 3.6: Mock Exam Senior Level',
+      { id: 's-6', title: 'Milestone 3.6: Kế toán Master (AC1 + AC2) — required cho Senior',
+        sectionPrefix: null, customMatch: (s) => /^AC[12]\./.test(s),
+        description: 'Senior consultant phải vững cả AC1 + AC2: từ Debit/Credit căn bản đến IFRS 15/16, Deferred Tax, Consolidation, Transfer Pricing. Đây là area độc lập với Industry — Senior phải tự đứng được khi tư vấn CFO.',
+        targetAccuracy: 0.7, checkpoint: 'AC1 ≥70% VÀ AC2 ≥65%' },
+      { id: 's-7', title: 'Milestone 3.7: Mock Exam Senior Level',
         sectionPrefix: null,
         description: 'Thi thử 80 câu trong 90 phút — Toàn bộ, target ≥75%. Có thể thi 2-3 lần để cải thiện.',
         targetAccuracy: 0.75, checkpoint: 'Best Mock ≥75%, đủ điều kiện L3 Senior',
