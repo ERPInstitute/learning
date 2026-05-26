@@ -2003,24 +2003,22 @@
     font-size: 11px; margin-left: 4px;
   }
   .app-version-badge {
-    position: absolute !important; top: 16px !important; left: 16px !important;
-    background: #FBBF24 !important; border: 2px solid #F59E0B !important;
-    color: #1F2937 !important; padding: 5px 11px !important; border-radius: 14px !important;
-    font-size: 12px !important; font-family: 'SF Mono', Consolas, monospace !important;
-    display: flex !important; align-items: center !important; gap: 6px !important;
+    position: absolute !important; top: 8px !important; left: 6px !important;
+    background: #FBBF24 !important; border: 1.5px solid #F59E0B !important;
+    color: #DC2626 !important; padding: 2px 7px !important; border-radius: 10px !important;
+    font-size: 11px !important; font-family: 'SF Mono', Consolas, monospace !important;
+    display: inline-flex !important; align-items: center !important;
     cursor: pointer !important; transition: all 0.15s !important; user-select: none !important;
-    z-index: 100 !important; box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
-    font-weight: 600 !important;
+    z-index: 100 !important; box-shadow: 0 1px 4px rgba(0,0,0,0.18) !important;
+    font-weight: 800 !important; letter-spacing: 0.3px !important;
+    line-height: 1.4 !important;
   }
-  .app-version-badge:hover { background: #F59E0B !important; transform: translateY(-1px); }
-  .app-version-badge .v-label { opacity: 0.75; font-size: 10px; text-transform: uppercase; }
-  .app-version-badge .v-num { font-weight: 800; letter-spacing: 0.5px; color: #DC2626; }
-  .app-version-badge .v-sw { opacity: 0.7; font-size: 10px; }
-  /* If search-trigger is shown, push badge below it; otherwise badge sits at top-left */
-  body.is-logged-in .app-version-badge { top: 56px !important; }
+  .app-version-badge:hover { background: #F59E0B !important; color: #FFF !important; }
+  /* If search-trigger is shown (after login), push badge below it */
+  body.is-logged-in .app-version-badge { top: 52px !important; left: 16px !important; }
   @media (max-width: 640px) {
-    .app-version-badge { padding: 3px 8px !important; font-size: 10px !important; }
-    body.is-logged-in .app-version-badge { top: 50px !important; }
+    .app-version-badge { padding: 2px 6px !important; font-size: 10px !important; top: 6px !important; left: 4px !important; }
+    body.is-logged-in .app-version-badge { top: 48px !important; left: 8px !important; }
   }
   .search-modal {
     position: fixed; inset: 0; background: rgba(0,0,0,0.5);
@@ -2241,9 +2239,7 @@
     🔍 <span class="search-label">Tìm kiếm</span> <span class="kbd">/</span>
   </button>
   <div class="app-version-badge" id="app-version-badge" onclick="showVersionDetails()" title="Click để xem chi tiết version + force reload">
-    <span class="v-label">build</span>
-    <span class="v-num" id="v-num">v2.6.2</span>
-    <span class="v-sw" id="v-sw">· sw:loading...</span>
+    <span class="v-num" id="v-num">v2.6.3</span>
   </div>
   <h1>📘 HỌC VIỆN ERP CONSULTING</h1>
   <p>Giải pháp Dynamics và Hệ sinh thái Microsoft</p>
@@ -5029,7 +5025,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 
 // ============ APP VERSION (kiểm soát thay đổi) ============
 const APP_VERSION = {
-  num: 'v2.6.2',
+  num: 'v2.6.3',
   date: '2026-05-26',
   notes: [
     'Version Badge MÀU VÀNG rực rỡ ở góc trái — luôn hiển thị, không thể miss',
@@ -5045,14 +5041,8 @@ const APP_VERSION = {
 
 function initVersionBadge() {
   const vNum = document.getElementById('v-num');
-  const vSw = document.getElementById('v-sw');
   if (vNum) vNum.textContent = APP_VERSION.num;
-  if (vSw && 'serviceWorker' in navigator) {
-    fetch('service-worker.js?v=' + Date.now()).then(r => r.text()).then(t => {
-      const m = t.match(/CACHE_VERSION\s*=\s*['"]([^'"]+)['"]/);
-      if (m && vSw) vSw.textContent = '· sw:' + m[1].replace('erp-pwa-', '');
-    }).catch(() => {});
-  }
+  // SW cache version is still shown in click-modal — not in compact badge
 }
 
 function showVersionDetails() {
