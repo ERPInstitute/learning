@@ -1030,6 +1030,141 @@
     .admin-table th, .admin-table td { padding: 8px 6px; }
   }
 
+  /* Certification Exam */
+  .cert-intro {
+    background: linear-gradient(135deg, #C00000 0%, #991B1B 100%);
+    color: white; border-radius: 14px; padding: 24px; margin-bottom: 18px;
+  }
+  .cert-intro h2 { font-size: 22px; margin: 0 0 6px 0; }
+  .cert-intro p { margin: 0; opacity: 0.93; font-size: 14px; }
+
+  .cert-session-card {
+    background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+    padding: 18px; margin-bottom: 12px; position: relative;
+  }
+  .cert-session-card.active { border-color: var(--green); box-shadow: 0 6px 16px rgba(22,163,74,0.12); }
+  .cert-session-card.upcoming { border-color: var(--primary); }
+  .cert-session-card.ended { opacity: 0.65; }
+  .cert-status-badge {
+    position: absolute; top: 14px; right: 14px;
+    padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .cert-status-badge.active { background: var(--green); color: white; }
+  .cert-status-badge.upcoming { background: var(--blue-bg); color: var(--primary); }
+  .cert-status-badge.ended { background: #F3F4F6; color: var(--text-muted); }
+  body[data-theme="dark"] .cert-status-badge.ended { background: var(--sidebar-hover); }
+  .cert-session-title { font-weight: 700; font-size: 16px; color: var(--text); margin: 0 0 4px 0; padding-right: 100px; }
+  .cert-session-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+  .cert-session-details {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px; padding: 10px 12px; background: #F9FAFB; border-radius: 6px;
+    margin: 10px 0; font-size: 12px;
+  }
+  body[data-theme="dark"] .cert-session-details { background: rgba(255,255,255,0.04); }
+  .cert-session-details div { display: flex; flex-direction: column; }
+  .cert-session-details .v { font-weight: 700; color: var(--text); font-size: 14px; }
+  .cert-session-details .l { color: var(--text-muted); font-size: 11px; }
+
+  /* Exam taking UI (strict mode) */
+  .exam-strict-header {
+    background: linear-gradient(135deg, var(--danger) 0%, #991B1B 100%);
+    color: white; border-radius: 12px; padding: 14px 20px; margin-bottom: 14px;
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    position: sticky; top: 48px; z-index: 5;
+  }
+  .exam-strict-header .timer-big {
+    font-family: 'SF Mono', Monaco, monospace; font-size: 28px; font-weight: 700;
+    background: rgba(255,255,255,0.2); padding: 6px 16px; border-radius: 8px;
+    min-width: 130px; text-align: center;
+  }
+  .exam-strict-header .timer-big.warn { background: var(--yellow-bg); color: var(--warning); animation: pulse 1.5s infinite; }
+  .exam-strict-header .timer-big.danger { background: white; color: var(--danger); animation: pulse 0.6s infinite; }
+  .exam-strict-header .progress-info { flex: 1; min-width: 200px; }
+  .exam-strict-header .submit-btn {
+    background: rgba(0,0,0,0.3); color: white; border: 2px solid white;
+    padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px;
+  }
+  .exam-strict-warning {
+    background: var(--yellow-bg); border-left: 4px solid var(--warning);
+    padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 14px;
+  }
+
+  /* Learning Roadmap */
+  .roadmap-intro {
+    background: linear-gradient(135deg, #0891B2 0%, #0E7490 100%);
+    color: white; border-radius: 14px; padding: 24px; margin-bottom: 16px;
+  }
+  .roadmap-intro h2 { font-size: 22px; margin: 0 0 6px 0; }
+  .roadmap-intro p { margin: 0; opacity: 0.93; font-size: 14px; }
+  .roadmap-path {
+    background: var(--card); border: 2px solid var(--border); border-radius: 14px;
+    padding: 20px; margin-bottom: 16px; position: relative;
+  }
+  .roadmap-path.path-1 { border-left: 6px solid #94A3B8; }
+  .roadmap-path.path-2 { border-left: 6px solid #2E5C9E; }
+  .roadmap-path.path-3 { border-left: 6px solid #16A34A; }
+  .roadmap-path.path-4 { border-left: 6px solid #7C3AED; }
+  .roadmap-path.current { box-shadow: 0 6px 18px var(--shadow); transform: translateY(-2px); }
+  .roadmap-path-head {
+    display: flex; gap: 14px; align-items: center; margin-bottom: 12px;
+  }
+  .roadmap-path-icon { font-size: 36px; }
+  .roadmap-path-title { font-size: 18px; font-weight: 700; color: var(--text); margin: 0; }
+  .roadmap-path-range { font-size: 12px; color: var(--text-muted); }
+  .roadmap-path-desc { font-size: 13px; color: var(--text); margin-bottom: 14px; line-height: 1.6; }
+  .roadmap-path-progress {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .roadmap-path-progress .bar {
+    flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+  }
+  .roadmap-path-progress .bar > div {
+    height: 100%; background: var(--primary); transition: width 0.4s;
+  }
+
+  .milestone {
+    background: rgba(0,0,0,0.02); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px;
+  }
+  body[data-theme="dark"] .milestone { background: rgba(255,255,255,0.04); }
+  .milestone.complete { border-color: var(--green); background: rgba(22, 163, 74, 0.06); }
+  .milestone-head {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 8px;
+  }
+  .milestone-num {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--border);
+    color: var(--text); font-weight: 700; display: flex; align-items: center;
+    justify-content: center; font-size: 13px; flex-shrink: 0;
+  }
+  .milestone.complete .milestone-num {
+    background: var(--green); color: white;
+  }
+  .milestone-title { font-weight: 700; color: var(--text); font-size: 14px; }
+  .milestone-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .milestone-desc { font-size: 13px; color: var(--text); margin: 6px 0; padding-left: 40px; line-height: 1.5; }
+  .milestone-stats {
+    display: flex; gap: 14px; align-items: center; padding-left: 40px;
+    font-size: 12px; color: var(--text-muted); margin: 6px 0;
+  }
+  .milestone-stats strong { color: var(--text); }
+  .milestone-actions {
+    padding-left: 40px; margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .milestone-actions button {
+    padding: 6px 14px; background: var(--primary); color: white; border: none;
+    border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
+  }
+  .milestone-actions button:hover { background: var(--primary-light); }
+  .milestone-actions button.secondary { background: white; border: 1px solid var(--border); color: var(--text); }
+  body[data-theme="dark"] .milestone-actions button.secondary { background: var(--card); color: var(--text); }
+  .milestone-checkpoint {
+    margin-top: 8px; padding-left: 40px; font-size: 12px;
+    background: var(--yellow-bg); border-radius: 6px; padding: 8px 12px 8px 40px;
+    color: var(--text); margin-left: 40px;
+  }
+
   /* Level Assessment */
   .level-hero {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
@@ -2122,9 +2257,11 @@
   <div class="menu-group">
     <button class="menu-trigger" data-group="learning"><span class="label-icon">📚</span><span class="label-text">Học tập</span> <span class="chev">▼</span></button>
     <div class="menu-dropdown">
+      <button class="menu-item tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span>Lộ trình học</span></button>
       <button class="menu-item tab-btn active" data-tab="quiz"><span class="icon">📝</span><span>Trắc nghiệm</span></button>
       <button class="menu-item tab-btn" data-tab="srs"><span class="icon">🔁</span><span>Ôn tập SRS</span><span id="srs-badge" class="badge" style="display:none;"></span></button>
-      <button class="menu-item tab-btn" data-tab="mock"><span class="icon">🎯</span><span>Thi thử</span></button>
+      <button class="menu-item tab-btn" data-tab="mock"><span class="icon">🎯</span><span>Thi thử (Self-test)</span></button>
+      <button class="menu-item tab-btn" data-tab="cert"><span class="icon">📜</span><span>Cert Exam (chính thức)</span></button>
     </div>
   </div>
 
@@ -2167,9 +2304,11 @@
 </nav>
 
 <main>
+  <div id="roadmap" class="panel"></div>
   <div id="quiz" class="panel active"></div>
   <div id="srs" class="panel"></div>
   <div id="mock" class="panel"></div>
+  <div id="cert" class="panel"></div>
   <div id="cases" class="panel"></div>
   <div id="advanced" class="panel"></div>
   <div id="gotchas" class="panel"></div>
@@ -3094,19 +3233,42 @@ function renderQuiz() {
     <div class="quiz-controls">
       <label>Bộ lọc:</label>
       <select id="filter-select">
-        <option value="all" ${state.filter === "all" ? "selected" : ""}>Tất cả (${QUESTIONS.length} câu)</option>
-        <option value="unanswered" ${state.filter === "unanswered" ? "selected" : ""}>Chưa làm</option>
-        <option value="wrong" ${state.filter === "wrong" ? "selected" : ""}>Đã làm sai</option>
-        <option value="bookmarks" ${state.filter === "bookmarks" ? "selected" : ""}>Tất cả bookmarks (${totalBookmarks})</option>
-        <option value="noted" ${state.filter === "noted" ? "selected" : ""}>📝 Có ghi chú (${Object.keys(state.notes || {}).length})</option>
-        <option value="hard" ${state.filter === "hard" ? "selected" : ""}>🔥 Câu khó (★★★★+)</option>
-        <option value="difficulty:1" ${state.filter === "difficulty:1" ? "selected" : ""}>⭐ Dễ (★)</option>
-        <option value="difficulty:2" ${state.filter === "difficulty:2" ? "selected" : ""}>⭐⭐ Khá dễ</option>
-        <option value="difficulty:3" ${state.filter === "difficulty:3" ? "selected" : ""}>⭐⭐⭐ Trung bình</option>
-        <option value="difficulty:4" ${state.filter === "difficulty:4" ? "selected" : ""}>⭐⭐⭐⭐ Khó</option>
-        <option value="difficulty:5" ${state.filter === "difficulty:5" ? "selected" : ""}>⭐⭐⭐⭐⭐ Rất khó</option>
-        ${folderList.map(f => `<option value="folder:${f}" ${state.filter === ('folder:'+f) ? "selected" : ""}>📁 ${f} (${(state.bookmarkFolders[f] || []).length})</option>`).join("")}
-        ${sections.map(s => `<option value="${s}" ${state.filter === s ? "selected" : ""}>${s}</option>`).join("")}
+        <optgroup label="🎯 Trạng thái">
+          <option value="all" ${state.filter === "all" ? "selected" : ""}>Tất cả (${QUESTIONS.length} câu)</option>
+          <option value="unanswered" ${state.filter === "unanswered" ? "selected" : ""}>Chưa làm</option>
+          <option value="wrong" ${state.filter === "wrong" ? "selected" : ""}>Đã làm sai</option>
+          <option value="bookmarks" ${state.filter === "bookmarks" ? "selected" : ""}>Tất cả bookmarks (${totalBookmarks})</option>
+          <option value="noted" ${state.filter === "noted" ? "selected" : ""}>📝 Có ghi chú (${Object.keys(state.notes || {}).length})</option>
+        </optgroup>
+        <optgroup label="⭐ Độ khó">
+          <option value="hard" ${state.filter === "hard" ? "selected" : ""}>🔥 Câu khó (★★★★+)</option>
+          <option value="difficulty:1" ${state.filter === "difficulty:1" ? "selected" : ""}>★ Dễ</option>
+          <option value="difficulty:2" ${state.filter === "difficulty:2" ? "selected" : ""}>★★ Khá dễ</option>
+          <option value="difficulty:3" ${state.filter === "difficulty:3" ? "selected" : ""}>★★★ Trung bình</option>
+          <option value="difficulty:4" ${state.filter === "difficulty:4" ? "selected" : ""}>★★★★ Khó</option>
+          <option value="difficulty:5" ${state.filter === "difficulty:5" ? "selected" : ""}>★★★★★ Rất khó</option>
+        </optgroup>
+        ${folderList.length > 0 ? '<optgroup label="📁 Folders bookmark">' + folderList.map(f => `<option value="folder:${f}" ${state.filter === ('folder:'+f) ? "selected" : ""}>📁 ${f} (${(state.bookmarkFolders[f] || []).length})</option>`).join("") + '</optgroup>' : ''}
+        ${(() => {
+          const groupings = [
+            { label: '📘 Nền tảng BC (A-F)', match: s => /^[A-F]\./.test(s) },
+            { label: '🌉 Mapping nghiệp vụ ↔ BC (G-N)', match: s => /^[G-N]\./.test(s) },
+            { label: '💼 Nghiệp vụ thuần (O-S)', match: s => /^[OPQRS]\. /.test(s) },
+            { label: '🎓 Nghiệp vụ nâng cao + Workshop (O2-T)', match: s => /^[OPQRS]2\./.test(s) || /^T\./.test(s) },
+            { label: '🧩 Câu hỏi tổng hợp (U)', match: s => /^U\./.test(s) },
+            { label: '🆕 BC 2026 / Copilot / Fabric (V-AA)', match: s => /^[VWXYZ]\. /.test(s) || /^AA\./.test(s) },
+            { label: '🧠 Kiến thức Master Level (AB)', match: s => /^AB\./.test(s) },
+            { label: '🏪 Retail Industry (Z1-Z13)', match: s => /^Z\d/.test(s) },
+            { label: '🏭 Manufacturing Industry (M1-M12)', match: s => /^M\d/.test(s) }
+          ];
+          return groupings.map(g => {
+            const items = sections.filter(g.match).sort();
+            if (items.length === 0) return '';
+            return '<optgroup label="' + g.label + '">' +
+              items.map(s => '<option value="' + s + '"' + (state.filter === s ? ' selected' : '') + '>' + escapeHtml(s) + '</option>').join('') +
+              '</optgroup>';
+          }).join('');
+        })()}
       </select>
       <button class="danger" onclick="resetProgress()">🔄 Reset</button>
     </div>
@@ -4517,7 +4679,7 @@ function renderStats() {
     "Nhóm 3 — Nghiệp vụ thuần cơ bản (key user)": ["O. Nghiệp vụ Mua hàng (thuần)", "P. Nghiệp vụ Kho hàng (thuần)", "Q. Quản trị Chất lượng (thuần)", "R. Nghiệp vụ Bán hàng (thuần)", "S. Kế toán Căn bản (thuần)"],
     "Nhóm 4 — Nghiệp vụ nâng cao (senior key user)": ["O2. Mua hàng nâng cao", "P2. Kho hàng nâng cao", "Q2. Quản trị Chất lượng nâng cao", "R2. Bán hàng nâng cao", "S2. Kế toán Căn bản nâng cao"],
     "Nhóm 5 — Kỹ năng Workshop ERP Consultant": ["T. Kỹ năng Workshop ERP Consultant"],
-    "Nhóm 6 — Dạng câu hỏi nâng cao": ["U. Nâng cao — Dạng câu hỏi mới"],
+    "Nhóm 6 — Câu hỏi tổng hợp (Multi/Sequence/Matching)": ["U. Câu hỏi tổng hợp (Multi-Select, Sequence, Matching)"],
     "Nhóm 7 — BC 2026 / Copilot / Fabric / Power Platform": ["V. Copilot & AI trong BC", "W. Microsoft Fabric & Analytics", "X. BC 2026 Release Updates", "Y. E-invoice VN 2026 & Localization", "Z. Power Platform & Integration", "AA. AL Extension & Modern Dev"],
     "Nhóm 7B — Anti-vẹt Multi Choice (★★★★+)": (() => {
       return [...new Set(QUESTIONS.filter(q => q.section && q.section.startsWith('AB.')).map(q => q.section))].sort();
@@ -4691,6 +4853,8 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     if (tab === "manufacturing") renderManufacturing();
     if (tab === "playbook") renderPlaybook();
     if (tab === "level") renderLevelAssessment();
+    if (tab === "roadmap") renderRoadmap();
+    if (tab === "cert") renderCertExam();
   });
 });
 
@@ -5162,11 +5326,14 @@ async function renderAdmin() {
         <button class="admin-subtab ${activeSubtab === 'heatmap' ? 'active' : ''}" onclick="setAdminSubtab('heatmap')">📊 Phân tích câu hỏi</button>
         <button class="admin-subtab ${activeSubtab === 'editor' ? 'active' : ''}" onclick="setAdminSubtab('editor')">📝 Editor câu hỏi</button>
         <button class="admin-subtab ${activeSubtab === 'playbook' ? 'active' : ''}" onclick="setAdminSubtab('playbook')">💎 Editor Cẩm nang</button>
+        <button class="admin-subtab ${activeSubtab === 'certsessions' ? 'active' : ''}" onclick="setAdminSubtab('certsessions')">📜 Cert Exam Sessions</button>
       </div>
 
       ${activeSubtab === 'heatmap' ? renderDifficultyHeatmap(users) :
         activeSubtab === 'teams' ? renderTeamsAnalysis(users) :
-        activeSubtab === 'editor' ? '<div id="qed-root">⏳ Đang tải editor...</div>' : `
+        activeSubtab === 'editor' ? '<div id="qed-root">⏳ Đang tải editor...</div>' :
+        activeSubtab === 'playbook' ? '<div id="pbed-root">⏳ Đang tải editor cẩm nang...</div>' :
+        activeSubtab === 'certsessions' ? '<div id="certadmin-root">⏳ Đang tải Cert Exam admin...</div>' : `
         <div class="admin-controls">
           <input type="search" id="admin-search" placeholder="🔍 Tìm theo email hoặc tên..." />
           <button onclick="exportUsersCSV()">📊 Export CSV</button>
@@ -5212,6 +5379,8 @@ async function renderAdmin() {
       renderQuestionEditor();
     } else if (activeSubtab === 'playbook') {
       renderPlaybookEditor();
+    } else if (activeSubtab === 'certsessions') {
+      renderCertExamAdmin();
     }
   } catch (e) {
     panel.innerHTML = `<div class="auth-error show" style="margin:20px;">Lỗi tải danh sách: ${e.message}<br><br>Nếu lỗi "Missing or insufficient permissions", kiểm tra Firestore Security Rules có cho admin list users không.</div>`;
@@ -7520,7 +7689,1174 @@ function buildLevelRequirements(level) {
   return reqs;
 }
 
-function assessLevel() {
+// ============ CERTIFICATION EXAM SYSTEM ============
+const CERT_SESSIONS_COLLECTION = 'cert_exam_sessions';
+const CERT_RESULTS_COLLECTION = 'cert_exam_results';
+
+const EXAM_TEMPLATES = {
+  junior: {
+    id: 'junior', name: 'Junior Consultant Certification',
+    level: 1, icon: '🌱', color: '#94A3B8',
+    totalQuestions: 30, durationMinutes: 30, passThreshold: 0.6,
+    description: 'Đánh giá nền tảng: BC core + nghiệp vụ căn bản. Pass = đạt L1 Junior.',
+    buckets: [
+      { label: 'BC Core (A-F)', match: s => /^[A-F]\./.test(s), count: 12, dr: [1, 3] },
+      { label: 'Mapping (G-N)', match: s => /^[G-N]\./.test(s), count: 5, dr: [2, 3] },
+      { label: 'Nghiệp vụ thuần (O-S)', match: s => /^[OPQRS]\. /.test(s), count: 8, dr: [1, 3] },
+      { label: 'Workshop (T)', match: s => /^T\./.test(s), count: 3, dr: [2, 3] },
+      { label: 'Industry intro / Modern', match: s => /^[VWXYZ]\. |^AA\.|^Z\d|^M\d/.test(s), count: 2, dr: [2, 3] }
+    ]
+  },
+  mid: {
+    id: 'mid', name: 'Mid-Level Consultant Certification',
+    level: 2, icon: '🚀', color: '#2E5C9E',
+    totalQuestions: 50, durationMinutes: 60, passThreshold: 0.7,
+    description: 'Đánh giá mid-level: design fit-gap, lead module project, mentor junior.',
+    buckets: [
+      { label: 'BC Core', match: s => /^[A-F]\./.test(s), count: 10, dr: [2, 4] },
+      { label: 'Mapping skills', match: s => /^[G-N]\./.test(s), count: 10, dr: [3, 4] },
+      { label: 'Nghiệp vụ thuần', match: s => /^[OPQRS]\. /.test(s), count: 8, dr: [2, 3] },
+      { label: 'Nghiệp vụ nâng cao', match: s => /^[OPQRS]2\./.test(s), count: 8, dr: [3, 4] },
+      { label: 'Workshop', match: s => /^T\./.test(s), count: 5, dr: [3, 4] },
+      { label: 'Industry', match: s => /^Z\d|^M\d/.test(s), count: 6, dr: [3, 4] },
+      { label: 'Modern Stack', match: s => /^[VWXYZ]\. |^AA\./.test(s), count: 3, dr: [3, 4] }
+    ]
+  },
+  senior: {
+    id: 'senior', name: 'Senior Consultant Certification',
+    level: 3, icon: '⭐', color: '#16A34A',
+    totalQuestions: 80, durationMinutes: 90, passThreshold: 0.75,
+    description: 'Đánh giá senior: cross-industry, solution architecture, mentor team.',
+    buckets: [
+      { label: 'BC + Modern (deep)', match: s => /^[A-F]\./.test(s) || /^[VWXYZ]\. /.test(s) || /^AA\./.test(s), count: 18, dr: [3, 5] },
+      { label: 'Mapping skills', match: s => /^[G-N]\./.test(s), count: 12, dr: [3, 4] },
+      { label: 'Nghiệp vụ nâng cao', match: s => /^[OPQRS]2\./.test(s) || /^[OPQRS]\. /.test(s), count: 10, dr: [3, 5] },
+      { label: 'Retail Industry', match: s => /^Z\d/.test(s), count: 10, dr: [3, 4] },
+      { label: 'Manufacturing', match: s => /^M\d/.test(s), count: 10, dr: [3, 4] },
+      { label: 'Workshop facilitation', match: s => /^T\./.test(s), count: 8, dr: [3, 5] },
+      { label: 'Kiến thức Tích hợp (AB)', match: s => /^AB\./.test(s), count: 8, dr: [4, 5] },
+      { label: 'Câu hỏi tổng hợp (U)', match: s => /^U\./.test(s), count: 4, dr: [3, 4] }
+    ]
+  },
+  principal: {
+    id: 'principal', name: 'Principal Consultant Certification',
+    level: 4, icon: '👑', color: '#7C3AED',
+    totalQuestions: 100, durationMinutes: 120, passThreshold: 0.8,
+    description: 'Đánh giá Principal: strategic thinking, multi-industry mastery, methodology owner.',
+    buckets: [
+      { label: 'BC + Modern Stack', match: s => /^[A-F]\./.test(s) || /^[VWXYZ]\. /.test(s) || /^AA\./.test(s), count: 22, dr: [4, 5] },
+      { label: 'Mapping (deep)', match: s => /^[G-N]\./.test(s), count: 12, dr: [3, 5] },
+      { label: 'Nghiệp vụ nâng cao', match: s => /^[OPQRS]2\./.test(s), count: 12, dr: [4, 5] },
+      { label: 'Retail Industry', match: s => /^Z\d/.test(s), count: 12, dr: [3, 5] },
+      { label: 'Manufacturing', match: s => /^M\d/.test(s), count: 12, dr: [3, 5] },
+      { label: 'Workshop L4', match: s => /^T\./.test(s), count: 10, dr: [4, 5] },
+      { label: 'Kiến thức Master Level (AB)', match: s => /^AB\./.test(s), count: 15, dr: [4, 5] },
+      { label: 'Câu hỏi tổng hợp (U)', match: s => /^U\./.test(s), count: 5, dr: [4, 5] }
+    ]
+  }
+};
+
+// Seedable PRNG (mulberry32) — deterministic random per user+session
+function seededRandom(seedStr) {
+  let h = 2166136261;
+  for (let i = 0; i < seedStr.length; i++) {
+    h ^= seedStr.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  let s = h >>> 0;
+  return function() {
+    s = (s + 0x6D2B79F5) | 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(arr, rng) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Pick N questions from a bucket using seeded RNG
+function pickFromBucket(bucket, rng) {
+  const pool = QUESTIONS.filter(q => {
+    if (!q.section || !bucket.match(q.section)) return false;
+    const d = getQuestionDifficulty(q);
+    return d >= bucket.dr[0] && d <= bucket.dr[1];
+  });
+  const shuffled = seededShuffle(pool, rng);
+  return shuffled.slice(0, Math.min(bucket.count, shuffled.length));
+}
+
+function generateExamPool(template, seedStr) {
+  const rng = seededRandom(seedStr);
+  const allPicked = [];
+  template.buckets.forEach(b => {
+    const picked = pickFromBucket(b, rng);
+    allPicked.push(...picked);
+  });
+  // Final shuffle of overall order
+  return seededShuffle(allPicked, rng);
+}
+
+// ============ Cert Exam Admin (Firestore CRUD) ============
+let _certSessions = [];
+let _certSessionsLoaded = false;
+
+async function loadCertSessions() {
+  if (!window.fb) return;
+  try {
+    const snap = await window.fb.getDocs(window.fb.collection(window.fb.db, CERT_SESSIONS_COLLECTION));
+    _certSessions = [];
+    snap.forEach(d => _certSessions.push({ ...d.data(), docId: d.id }));
+    _certSessionsLoaded = true;
+  } catch (e) {
+    console.warn('Cannot load cert sessions:', e.message);
+  }
+}
+
+function sessionStatus(s) {
+  const now = Date.now();
+  const start = s.startAt && s.startAt.toMillis ? s.startAt.toMillis() : (s.startAt || 0);
+  const end = s.endAt && s.endAt.toMillis ? s.endAt.toMillis() : (s.endAt || 0);
+  if (now < start) return 'upcoming';
+  if (now >= start && now <= end) return 'active';
+  return 'ended';
+}
+
+function fmtDateTime(ms) {
+  if (!ms) return '—';
+  const m = (ms && ms.toMillis) ? ms.toMillis() : ms;
+  return new Date(m).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function renderCertExamAdmin() {
+  const root = document.getElementById('certadmin-root');
+  if (!root) return;
+  if (!_certSessionsLoaded) {
+    await loadCertSessions();
+  }
+  // Sort by createdAt desc
+  const sessions = _certSessions.slice().sort((a, b) => {
+    const ta = (a.createdAt && a.createdAt.toMillis && a.createdAt.toMillis()) || 0;
+    const tb = (b.createdAt && b.createdAt.toMillis && b.createdAt.toMillis()) || 0;
+    return tb - ta;
+  });
+
+  root.innerHTML = `
+    <div style="background:var(--blue-bg); padding:14px 16px; border-radius:8px; margin-bottom:14px; font-size:13px; line-height:1.6;">
+      📜 <strong>Cert Exam là đề thi CHÍNH THỨC</strong> — khác với Mock Exam (self-test). Admin tạo session với time-window, mỗi user nhận đề random khác nhau từ ngân hàng câu hỏi. Không thể retry.
+    </div>
+
+    <div class="qed-toolbar">
+      <button class="primary" onclick="openCertSessionModal()">+ Tạo Exam Session mới</button>
+      <button onclick="_certSessionsLoaded=false; renderCertExamAdmin();">🔄 Reload</button>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <h3 style="color:var(--primary); margin:0 0 10px 0; font-size:15px;">📋 Tất cả Exam Sessions (${sessions.length})</h3>
+      ${sessions.length === 0
+        ? '<div style="padding:30px; text-align:center; color:var(--text-muted); background:var(--card); border-radius:10px;">Chưa có exam session nào. Bấm "Tạo Exam Session mới" để bắt đầu.</div>'
+        : sessions.map(s => {
+            const status = sessionStatus(s);
+            const tmpl = EXAM_TEMPLATES[s.templateId] || { name: s.templateId, icon: '?' };
+            return `
+              <div class="cert-session-card ${status}">
+                <span class="cert-status-badge ${status}">${status === 'active' ? '🟢 Đang diễn ra' : status === 'upcoming' ? '🔵 Sắp tới' : '⚪ Đã kết thúc'}</span>
+                <div class="cert-session-title">${tmpl.icon} ${escapeHtml(s.name)}</div>
+                <div class="cert-session-meta">Template: <strong>${escapeHtml(tmpl.name)}</strong></div>
+                <div class="cert-session-details">
+                  <div><span class="l">Bắt đầu</span><span class="v">${fmtDateTime(s.startAt)}</span></div>
+                  <div><span class="l">Kết thúc</span><span class="v">${fmtDateTime(s.endAt)}</span></div>
+                  <div><span class="l">Thời gian thi</span><span class="v">${s.durationMinutes} phút</span></div>
+                  <div><span class="l">Số câu</span><span class="v">${tmpl.totalQuestions}</span></div>
+                  <div><span class="l">Pass</span><span class="v">≥${Math.round(tmpl.passThreshold * 100)}%</span></div>
+                  <div><span class="l">Whitelist email</span><span class="v">${(s.allowedEmails && s.allowedEmails.length) ? s.allowedEmails.length + ' người' : 'Mở (mọi user)'}</span></div>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                  <button class="action-btn" onclick="viewCertResults('${s.docId}')">📊 Xem kết quả</button>
+                  <button class="action-btn" onclick="openCertSessionModal('${s.docId}')">✏️ Sửa</button>
+                  <button class="action-btn danger" onclick="deleteCertSession('${s.docId}')">🗑️ Xoá</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+    </div>
+
+    <div id="cert-session-modal" class="qed-modal">
+      <div class="qed-box">
+        <button class="qed-close" onclick="closeCertSessionModal()">×</button>
+        <h3 id="cert-modal-title">Tạo Exam Session</h3>
+        <div class="qed-form" id="cert-modal-body"></div>
+      </div>
+    </div>
+
+    <div id="cert-results-modal" class="qed-modal">
+      <div class="qed-box" style="max-width:900px;">
+        <button class="qed-close" onclick="document.getElementById('cert-results-modal').classList.remove('show');">×</button>
+        <h3 id="cert-results-title">Kết quả Exam Session</h3>
+        <div id="cert-results-body"></div>
+      </div>
+    </div>
+  `;
+}
+
+function openCertSessionModal(docId) {
+  const existing = docId ? _certSessions.find(s => s.docId === docId) : null;
+  const isEdit = !!existing;
+  const now = new Date();
+  const tomorrow = new Date(now.getTime() + 24 * 3600000);
+  const defaultStart = existing && existing.startAt ? new Date(existing.startAt.toMillis ? existing.startAt.toMillis() : existing.startAt) : now;
+  const defaultEnd = existing && existing.endAt ? new Date(existing.endAt.toMillis ? existing.endAt.toMillis() : existing.endAt) : tomorrow;
+  const toLocalDT = (d) => {
+    const pad = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  };
+
+  document.getElementById('cert-modal-title').textContent = isEdit ? '✏️ Sửa Exam Session' : '+ Tạo Exam Session mới';
+  document.getElementById('cert-modal-body').innerHTML = `
+    <div>
+      <label>Tên Session (hiển thị cho user)</label>
+      <input type="text" id="cert-name" value="${existing ? escapeHtml(existing.name) : ''}" placeholder="VD: Đánh giá Mid-Level Q1 2026 — Naviworld VN" />
+    </div>
+    <div>
+      <label>Template (Level)</label>
+      <select id="cert-template">
+        ${Object.values(EXAM_TEMPLATES).map(t => '<option value="' + t.id + '"' + (existing && existing.templateId === t.id ? ' selected' : '') + '>' + t.icon + ' ' + t.name + ' (' + t.totalQuestions + ' câu × ' + t.durationMinutes + ' phút, pass ≥' + Math.round(t.passThreshold * 100) + '%)</option>').join('')}
+      </select>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div>
+        <label>Bắt đầu mở thi</label>
+        <input type="datetime-local" id="cert-start" value="${toLocalDT(defaultStart)}" />
+      </div>
+      <div>
+        <label>Kết thúc (đóng thi)</label>
+        <input type="datetime-local" id="cert-end" value="${toLocalDT(defaultEnd)}" />
+      </div>
+    </div>
+    <div>
+      <label>Thời gian / lần thi (phút) — override template default</label>
+      <input type="number" id="cert-duration" value="${existing ? existing.durationMinutes : 60}" min="10" max="240" />
+    </div>
+    <div>
+      <label>Whitelist email (mỗi dòng 1 email, để trống = mở cho mọi user đăng nhập)</label>
+      <textarea id="cert-emails" style="min-height:80px;" placeholder="user1@naviworld.com.vn&#10;user2@naviworld.com.vn">${existing && existing.allowedEmails ? existing.allowedEmails.join('\n') : ''}</textarea>
+    </div>
+    <div class="qed-actions">
+      <button class="cancel" onclick="closeCertSessionModal()">Huỷ</button>
+      <button class="save" onclick="saveCertSession(${isEdit ? "'" + docId + "'" : 'null'})">💾 Lưu</button>
+    </div>
+  `;
+  document.getElementById('cert-session-modal').classList.add('show');
+}
+
+function closeCertSessionModal() {
+  document.getElementById('cert-session-modal').classList.remove('show');
+}
+
+async function saveCertSession(docId) {
+  const name = document.getElementById('cert-name').value.trim();
+  const templateId = document.getElementById('cert-template').value;
+  const startStr = document.getElementById('cert-start').value;
+  const endStr = document.getElementById('cert-end').value;
+  const duration = parseInt(document.getElementById('cert-duration').value) || 60;
+  const emailsRaw = document.getElementById('cert-emails').value.trim();
+  const allowedEmails = emailsRaw ? emailsRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+
+  if (!name) return alert('Vui lòng nhập tên session');
+  if (!startStr || !endStr) return alert('Vui lòng chọn thời gian bắt đầu và kết thúc');
+  const start = new Date(startStr).getTime();
+  const end = new Date(endStr).getTime();
+  if (end <= start) return alert('Thời gian kết thúc phải sau thời gian bắt đầu');
+
+  const data = {
+    name, templateId,
+    startAt: new Date(start),
+    endAt: new Date(end),
+    durationMinutes: duration,
+    allowedEmails,
+    createdBy: window.fb.auth.currentUser.email,
+    updatedAt: window.fb.serverTimestamp()
+  };
+  if (!docId) data.createdAt = window.fb.serverTimestamp();
+
+  try {
+    if (docId) {
+      await window.fb.updateDoc(window.fb.doc(window.fb.db, CERT_SESSIONS_COLLECTION, docId), data);
+    } else {
+      await window.fb.addDoc(window.fb.collection(window.fb.db, CERT_SESSIONS_COLLECTION), data);
+    }
+    closeCertSessionModal();
+    _certSessionsLoaded = false;
+    renderCertExamAdmin();
+  } catch (e) {
+    alert('Lỗi khi lưu: ' + e.message + '\n\nNếu lỗi "Missing permissions", cần update Firestore Rules cho collection "cert_exam_sessions".');
+  }
+}
+
+async function deleteCertSession(docId) {
+  if (!confirm('Xoá Exam Session này?\nLưu ý: kết quả của user đã làm sẽ vẫn còn (không xoá).')) return;
+  try {
+    await window.fb.deleteDoc(window.fb.doc(window.fb.db, CERT_SESSIONS_COLLECTION, docId));
+    _certSessionsLoaded = false;
+    renderCertExamAdmin();
+  } catch (e) {
+    alert('Lỗi: ' + e.message);
+  }
+}
+
+async function viewCertResults(sessionId) {
+  document.getElementById('cert-results-modal').classList.add('show');
+  document.getElementById('cert-results-body').innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-muted);">⏳ Đang tải kết quả...</div>';
+  try {
+    const snap = await window.fb.getDocs(window.fb.query(
+      window.fb.collection(window.fb.db, CERT_RESULTS_COLLECTION),
+      window.fb.where('sessionId', '==', sessionId)
+    ));
+    const results = [];
+    snap.forEach(d => results.push({ ...d.data(), docId: d.id }));
+    results.sort((a, b) => {
+      const tb = (b.submittedAt && b.submittedAt.toMillis && b.submittedAt.toMillis()) || 0;
+      const ta = (a.submittedAt && a.submittedAt.toMillis && a.submittedAt.toMillis()) || 0;
+      return tb - ta;
+    });
+
+    const session = _certSessions.find(s => s.docId === sessionId);
+    const tmpl = session ? EXAM_TEMPLATES[session.templateId] : null;
+    const passThreshold = tmpl ? tmpl.passThreshold : 0.7;
+
+    document.getElementById('cert-results-title').textContent = '📊 Kết quả: ' + (session ? session.name : '?');
+    document.getElementById('cert-results-body').innerHTML = `
+      <div style="margin-bottom:14px;">
+        <strong>${results.length}</strong> người đã hoàn thành / Pass threshold: <strong>≥${Math.round(passThreshold * 100)}%</strong>
+        <button class="action-btn" onclick="exportCertResultsCSV('${sessionId}')" style="margin-left:14px;">📊 Export CSV</button>
+      </div>
+      ${results.length === 0
+        ? '<div style="padding:30px; text-align:center; color:var(--text-muted);">Chưa có ai làm bài này.</div>'
+        : '<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>User</th><th>Email</th><th style="text-align:center;">Điểm</th><th style="text-align:center;">Đúng</th><th style="text-align:center;">Time</th><th style="text-align:center;">Pass?</th><th>Nộp lúc</th></tr></thead><tbody>' +
+          results.map(r => {
+            const pct = Math.round(r.score * 100);
+            const passed = r.score >= passThreshold;
+            const timeMin = Math.round((r.durationSeconds || 0) / 60);
+            return '<tr>' +
+              '<td><strong>' + escapeHtml(r.userName || '?') + '</strong></td>' +
+              '<td style="font-size:12px;">' + escapeHtml(r.userEmail || '?') + '</td>' +
+              '<td style="text-align:center;"><span class="score-badge ' + (passed ? 'good' : pct >= 50 ? 'mid' : 'low') + '">' + pct + '%</span></td>' +
+              '<td style="text-align:center;">' + r.correct + '/' + r.totalQuestions + '</td>' +
+              '<td style="text-align:center;">' + timeMin + ' phút</td>' +
+              '<td style="text-align:center;">' + (passed ? '<span style="color:var(--green); font-weight:700;">✓ PASS</span>' : '<span style="color:var(--danger); font-weight:700;">✗ FAIL</span>') + '</td>' +
+              '<td style="font-size:12px;">' + fmtDateTime(r.submittedAt) + '</td>' +
+            '</tr>';
+          }).join('') +
+        '</tbody></table></div>'
+      }
+    `;
+  } catch (e) {
+    document.getElementById('cert-results-body').innerHTML = '<div class="auth-error show">Lỗi: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+async function exportCertResultsCSV(sessionId) {
+  try {
+    const snap = await window.fb.getDocs(window.fb.query(
+      window.fb.collection(window.fb.db, CERT_RESULTS_COLLECTION),
+      window.fb.where('sessionId', '==', sessionId)
+    ));
+    const results = [];
+    snap.forEach(d => results.push(d.data()));
+    if (results.length === 0) { alert('Chưa có dữ liệu.'); return; }
+    const escapeCSV = v => {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    };
+    let csv = 'User,Email,Score%,Correct,TotalQuestions,DurationSec,Pass,SubmittedAt\n';
+    results.forEach(r => {
+      const pct = Math.round(r.score * 100);
+      const session = _certSessions.find(s => s.docId === sessionId);
+      const tmpl = session ? EXAM_TEMPLATES[session.templateId] : null;
+      const pass = r.score >= (tmpl ? tmpl.passThreshold : 0.7);
+      const subAt = (r.submittedAt && r.submittedAt.toDate && r.submittedAt.toDate().toISOString()) || '';
+      csv += [r.userName, r.userEmail, pct, r.correct, r.totalQuestions, r.durationSeconds, pass ? 'PASS' : 'FAIL', subAt].map(escapeCSV).join(',') + '\n';
+    });
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cert-results-' + sessionId + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert('Lỗi: ' + e.message);
+  }
+}
+
+// ============ User-facing Cert Exam ============
+let _certActiveExam = null;
+let _certTimer = null;
+
+async function renderCertExam() {
+  const panel = document.getElementById('cert');
+  // If exam is currently being taken
+  if (_certActiveExam && !_certActiveExam.finishedAt) {
+    renderCertExamTaking();
+    return;
+  }
+  if (_certActiveExam && _certActiveExam.finishedAt) {
+    renderCertExamResult();
+    return;
+  }
+
+  if (!_certSessionsLoaded) {
+    panel.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-muted);">⏳ Đang tải danh sách...</div>';
+    await loadCertSessions();
+  }
+
+  const user = window.fb.auth.currentUser;
+  const userEmail = user ? user.email : '';
+  // Filter sessions accessible to this user
+  const accessible = _certSessions.filter(s => {
+    if (!s.allowedEmails || s.allowedEmails.length === 0) return true;
+    return s.allowedEmails.includes(userEmail);
+  });
+
+  // Group by status
+  const active = accessible.filter(s => sessionStatus(s) === 'active');
+  const upcoming = accessible.filter(s => sessionStatus(s) === 'upcoming');
+  const ended = accessible.filter(s => sessionStatus(s) === 'ended');
+
+  panel.innerHTML = `
+    <div class="cert-intro">
+      <h2>📜 Certification Exam — Đề thi chính thức</h2>
+      <p>Đề thi do admin tạo ra để đánh giá level Junior/Mid/Senior/Principal. Mỗi user nhận đề random khác nhau từ ngân hàng câu hỏi. Có time-window + time limit. Không retry. Nghiêm túc như chứng chỉ thật.</p>
+    </div>
+
+    <div style="background:var(--yellow-bg); border-left:4px solid var(--warning); padding:12px 14px; border-radius:6px; margin-bottom:14px; font-size:13px;">
+      ⚠️ <strong>Lưu ý quan trọng trước khi bắt đầu:</strong><br>
+      • Đã bấm "Bắt đầu" = đếm giờ ngay, không pause được.<br>
+      • Không retry (mỗi session làm 1 lần). Đảm bảo có thời gian + môi trường yên tĩnh.<br>
+      • Không có gợi ý / SRS / notes trong khi thi.<br>
+      • Kết quả gửi admin ngay sau khi nộp.
+    </div>
+
+    ${active.length > 0 ? `
+      <h3 style="color:var(--green); margin:18px 0 10px 0;">🟢 Đang mở (${active.length})</h3>
+      ${active.map(s => renderUserSessionCard(s, 'active')).join('')}
+    ` : ''}
+
+    ${upcoming.length > 0 ? `
+      <h3 style="color:var(--primary); margin:18px 0 10px 0;">🔵 Sắp diễn ra (${upcoming.length})</h3>
+      ${upcoming.map(s => renderUserSessionCard(s, 'upcoming')).join('')}
+    ` : ''}
+
+    ${ended.length > 0 ? `
+      <h3 style="color:var(--text-muted); margin:18px 0 10px 0;">⚪ Đã kết thúc (${ended.length})</h3>
+      ${ended.slice(0, 10).map(s => renderUserSessionCard(s, 'ended')).join('')}
+    ` : ''}
+
+    ${accessible.length === 0 ? `
+      <div style="padding:40px; text-align:center; color:var(--text-muted); background:var(--card); border-radius:10px;">
+        <div style="font-size:48px; margin-bottom:10px;">📭</div>
+        <h3 style="margin:0 0 6px 0; color:var(--text);">Không có Cert Exam nào dành cho bạn</h3>
+        <p style="margin:0;">Admin chưa tạo session, hoặc bạn không có trong whitelist. Trong khi chờ, có thể luyện ở <strong>tab 🎯 Thi thử</strong>.</p>
+      </div>
+    ` : ''}
+  `;
+}
+
+function renderUserSessionCard(s, status) {
+  const tmpl = EXAM_TEMPLATES[s.templateId] || { name: s.templateId, icon: '?' };
+  const user = window.fb.auth.currentUser;
+  // Check if user already attempted
+  return `
+    <div class="cert-session-card ${status}">
+      <span class="cert-status-badge ${status}">${status === 'active' ? '🟢 Đang mở' : status === 'upcoming' ? '🔵 Sắp tới' : '⚪ Đã kết thúc'}</span>
+      <div class="cert-session-title">${tmpl.icon} ${escapeHtml(s.name)}</div>
+      <div class="cert-session-meta">Template: <strong>${escapeHtml(tmpl.name)}</strong> — ${escapeHtml(tmpl.description)}</div>
+      <div class="cert-session-details">
+        <div><span class="l">Mở thi từ</span><span class="v">${fmtDateTime(s.startAt)}</span></div>
+        <div><span class="l">Đến</span><span class="v">${fmtDateTime(s.endAt)}</span></div>
+        <div><span class="l">Số câu</span><span class="v">${tmpl.totalQuestions}</span></div>
+        <div><span class="l">Thời gian</span><span class="v">${s.durationMinutes} phút</span></div>
+        <div><span class="l">Pass</span><span class="v">≥${Math.round(tmpl.passThreshold * 100)}%</span></div>
+      </div>
+      ${status === 'active'
+        ? '<button class="exam-submit-btn" style="margin-top:10px; background:var(--green); color:white; border:none; padding:12px 24px; font-weight:700; border-radius:8px; cursor:pointer; font-size:14px;" onclick="confirmStartCertExam(\'' + s.docId + '\')">▶️ Bắt đầu thi</button>'
+        : status === 'upcoming'
+        ? '<div style="margin-top:10px; color:var(--text-muted); font-size:13px;">⏳ Chưa đến giờ mở thi.</div>'
+        : '<button class="action-btn" onclick="viewMyCertResult(\'' + s.docId + '\')">📊 Xem kết quả của bạn</button>'}
+    </div>
+  `;
+}
+
+async function confirmStartCertExam(sessionId) {
+  const session = _certSessions.find(s => s.docId === sessionId);
+  if (!session) return alert('Không tìm thấy session.');
+  const tmpl = EXAM_TEMPLATES[session.templateId];
+  if (!tmpl) return alert('Template không hợp lệ.');
+
+  // Check if user already took this session
+  const user = window.fb.auth.currentUser;
+  try {
+    const snap = await window.fb.getDocs(window.fb.query(
+      window.fb.collection(window.fb.db, CERT_RESULTS_COLLECTION),
+      window.fb.where('sessionId', '==', sessionId),
+      window.fb.where('userId', '==', user.uid)
+    ));
+    if (!snap.empty) {
+      alert('Bạn đã làm bài này rồi. Cert Exam chỉ cho phép 1 lần.');
+      return;
+    }
+  } catch (e) {
+    console.warn('Cannot check prior attempts:', e.message);
+  }
+
+  if (!confirm('⚠️ XÁC NHẬN BẮT ĐẦU THI:\n\n' +
+    '• Template: ' + tmpl.name + '\n' +
+    '• ' + tmpl.totalQuestions + ' câu hỏi\n' +
+    '• Thời gian: ' + session.durationMinutes + ' phút (auto submit khi hết giờ)\n' +
+    '• Pass: ≥' + Math.round(tmpl.passThreshold * 100) + '%\n' +
+    '• Không retry. Không pause.\n\n' +
+    'Bắt đầu ngay?')) return;
+
+  // Generate pool with seed = sessionId + userId (deterministic per user, anti-share)
+  const seed = sessionId + '|' + user.uid;
+  let pool = generateExamPool(tmpl, seed);
+  if (pool.length < tmpl.totalQuestions) {
+    // Top up with random if short
+    console.warn('Pool short, expected', tmpl.totalQuestions, 'got', pool.length);
+  }
+  pool = pool.slice(0, tmpl.totalQuestions);
+
+  // Shuffle options for each single/multi question (anti-screenshot)
+  const rng = seededRandom(seed + '|opt');
+  pool = pool.map(q => {
+    if ((q.type === 'single' || !q.type) && q.options) {
+      const indexed = q.options.map((opt, i) => ({ opt, i }));
+      const shuffled = seededShuffle(indexed, rng);
+      const newCorrect = shuffled.findIndex(x => x.i === q.correct);
+      return { ...q, options: shuffled.map(x => x.opt), correct: newCorrect, _shuffleMap: shuffled.map(x => x.i) };
+    }
+    if (q.type === 'multi' && Array.isArray(q.correct)) {
+      const indexed = q.options.map((opt, i) => ({ opt, i }));
+      const shuffled = seededShuffle(indexed, rng);
+      const correctSet = new Set(q.correct);
+      const newCorrect = shuffled.map((x, ni) => correctSet.has(x.i) ? ni : -1).filter(x => x >= 0);
+      return { ...q, options: shuffled.map(x => x.opt), correct: newCorrect, _shuffleMap: shuffled.map(x => x.i) };
+    }
+    return q;
+  });
+
+  _certActiveExam = {
+    sessionId, templateId: tmpl.id,
+    qids: pool.map(q => q.id),
+    pool: pool, // keep shuffled version with mapped correct
+    answers: {},
+    startTs: Date.now(),
+    durationMs: session.durationMinutes * 60 * 1000,
+    currentIdx: 0,
+    finishedAt: null,
+    result: null,
+    userId: user.uid, userEmail: user.email, userName: user.displayName || user.email.split('@')[0]
+  };
+  if (_certTimer) clearInterval(_certTimer);
+  _certTimer = setInterval(tickCertTimer, 1000);
+  renderCertExamTaking();
+}
+
+function tickCertTimer() {
+  if (!_certActiveExam || _certActiveExam.finishedAt) return;
+  const remaining = _certActiveExam.startTs + _certActiveExam.durationMs - Date.now();
+  const el = document.getElementById('cert-timer');
+  if (el) {
+    if (remaining <= 0) {
+      el.textContent = '00:00';
+      finishCertExam(true);
+      return;
+    }
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    el.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    if (remaining < 60000) el.classList.add('danger');
+    else if (remaining < 5 * 60000) { el.classList.add('warn'); el.classList.remove('danger'); }
+    else { el.classList.remove('warn'); el.classList.remove('danger'); }
+  }
+}
+
+function renderCertExamTaking() {
+  const panel = document.getElementById('cert');
+  const s = _certActiveExam;
+  if (!s) { renderCertExam(); return; }
+  const q = s.pool[s.currentIdx];
+  if (!q) { renderCertExam(); return; }
+  const answered = Object.keys(s.answers).length;
+  const total = s.qids.length;
+  const remaining = s.startTs + s.durationMs - Date.now();
+  const mins = Math.max(0, Math.floor(remaining / 60000));
+  const secs = Math.max(0, Math.floor((remaining % 60000) / 1000));
+
+  // Render based on question type
+  let qBody = '';
+  const sel = s.answers[q.id];
+  if (q.type === 'multi' && Array.isArray(q.correct)) {
+    const selArr = Array.isArray(sel) ? sel : [];
+    qBody = '<div class="options">' +
+      q.options.map((opt, i) => {
+        const cls = 'option multi' + (selArr.includes(i) ? ' multi-selected' : '');
+        return '<div class="' + cls + '" onclick="toggleCertMultiOption(' + i + ')">' +
+          '<div class="option-letter">' + (selArr.includes(i) ? '✓' : String.fromCharCode(65 + i)) + '</div>' +
+          '<div class="option-text">' + escapeHtml(opt) + '</div>' +
+        '</div>';
+      }).join('') +
+      '</div>' +
+      '<div style="font-size:12px; color:var(--text-muted); margin-top:6px;">📌 Câu nhiều đáp án — chọn tất cả đáp án ĐÚNG.</div>';
+  } else {
+    // Single choice (default)
+    qBody = '<div class="options">' +
+      q.options.map((opt, i) => {
+        const cls = 'option' + (sel === i ? ' selected' : '');
+        return '<div class="' + cls + '" onclick="answerCertQ(' + i + ')">' +
+          '<div class="option-letter">' + String.fromCharCode(65 + i) + '</div>' +
+          '<div class="option-text">' + escapeHtml(opt) + '</div>' +
+        '</div>';
+      }).join('') +
+      '</div>';
+  }
+
+  panel.innerHTML = `
+    <div class="exam-strict-header">
+      <div>
+        <div style="font-size:11px; opacity:0.8;">⏱️ THỜI GIAN CÒN LẠI</div>
+        <div class="timer-big" id="cert-timer">${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}</div>
+      </div>
+      <div class="progress-info">
+        <div style="font-size:11px; opacity:0.8;">📜 CERT EXAM • ${EXAM_TEMPLATES[s.templateId].name}</div>
+        <div style="font-weight:700;">Câu ${s.currentIdx + 1} / ${total} • Đã trả lời ${answered}</div>
+      </div>
+      <button class="submit-btn" onclick="confirmFinishCertExam()">📤 Nộp bài</button>
+    </div>
+
+    <div class="exam-question-grid">
+      ${s.qids.map((qid, i) => {
+        let cls = 'exam-q-dot';
+        if (s.answers[qid] !== undefined) cls += ' answered';
+        if (i === s.currentIdx) cls += ' current';
+        return '<div class="' + cls + '" onclick="goCertQ(' + i + ')" title="Câu ' + (i + 1) + '">' + (i + 1) + '</div>';
+      }).join('')}
+    </div>
+
+    <div class="question-card">
+      <div class="question-section">${escapeHtml(q.section || '')}</div>
+      <div class="question-num">Câu ${s.currentIdx + 1} / ${total} ${difficultyBadge(getQuestionDifficulty(q))}</div>
+      <div class="question-text">${escapeHtml(q.q)}</div>
+      ${qBody}
+      <div class="nav-buttons">
+        <button class="btn-secondary" ${s.currentIdx === 0 ? 'disabled' : ''} onclick="navCertExam(-1)">← Trước</button>
+        <button class="btn-secondary" onclick="navCertExamNextUnanswered()">→ Câu chưa làm</button>
+        <button class="btn-primary" ${s.currentIdx >= total - 1 ? 'disabled' : ''} onclick="navCertExam(1)">Tiếp →</button>
+      </div>
+    </div>
+  `;
+}
+
+function answerCertQ(idx) {
+  if (!_certActiveExam || _certActiveExam.finishedAt) return;
+  const q = _certActiveExam.pool[_certActiveExam.currentIdx];
+  _certActiveExam.answers[q.id] = idx;
+  renderCertExamTaking();
+}
+
+function toggleCertMultiOption(idx) {
+  if (!_certActiveExam || _certActiveExam.finishedAt) return;
+  const q = _certActiveExam.pool[_certActiveExam.currentIdx];
+  const cur = Array.isArray(_certActiveExam.answers[q.id]) ? _certActiveExam.answers[q.id].slice() : [];
+  const pos = cur.indexOf(idx);
+  if (pos >= 0) cur.splice(pos, 1); else cur.push(idx);
+  _certActiveExam.answers[q.id] = cur;
+  renderCertExamTaking();
+}
+
+function goCertQ(idx) { if (_certActiveExam) { _certActiveExam.currentIdx = idx; renderCertExamTaking(); } }
+function navCertExam(delta) {
+  if (!_certActiveExam) return;
+  const next = _certActiveExam.currentIdx + delta;
+  if (next < 0 || next >= _certActiveExam.qids.length) return;
+  _certActiveExam.currentIdx = next;
+  renderCertExamTaking();
+}
+function navCertExamNextUnanswered() {
+  if (!_certActiveExam) return;
+  const total = _certActiveExam.qids.length;
+  for (let off = 1; off <= total; off++) {
+    const i = (_certActiveExam.currentIdx + off) % total;
+    if (_certActiveExam.answers[_certActiveExam.qids[i]] === undefined) {
+      _certActiveExam.currentIdx = i; renderCertExamTaking(); return;
+    }
+  }
+  if (confirm('Tất cả câu đã có đáp án. Nộp bài luôn?')) confirmFinishCertExam();
+}
+
+function confirmFinishCertExam() {
+  if (!_certActiveExam) return;
+  const unanswered = _certActiveExam.qids.length - Object.keys(_certActiveExam.answers).length;
+  let msg = '⚠️ NỘP BÀI THI CHÍNH THỨC?\n\n';
+  if (unanswered > 0) msg += 'Còn ' + unanswered + ' câu CHƯA TRẢ LỜI (tính là sai).\n\n';
+  msg += 'Không thể undo. Kết quả sẽ gửi admin ngay.';
+  if (!confirm(msg)) return;
+  finishCertExam(false);
+}
+
+async function finishCertExam(timeOut) {
+  if (!_certActiveExam || _certActiveExam.finishedAt) return;
+  if (_certTimer) { clearInterval(_certTimer); _certTimer = null; }
+  const s = _certActiveExam;
+  const now = Date.now();
+  s.finishedAt = now;
+
+  // Score
+  let correct = 0, wrong = 0, unanswered = 0;
+  const bySection = {};
+  s.pool.forEach((q, idx) => {
+    if (!bySection[q.section]) bySection[q.section] = { total: 0, correct: 0 };
+    bySection[q.section].total++;
+    const ans = s.answers[q.id];
+    let isCorrect = false;
+    if (ans === undefined) { unanswered++; }
+    else if (q.type === 'multi' && Array.isArray(q.correct)) {
+      const ansArr = (Array.isArray(ans) ? ans : []).slice().sort();
+      const corrArr = q.correct.slice().sort();
+      isCorrect = ansArr.length === corrArr.length && ansArr.every((v, i) => v === corrArr[i]);
+    } else {
+      isCorrect = ans === q.correct;
+    }
+    if (isCorrect) { correct++; bySection[q.section].correct++; }
+    else if (ans !== undefined) wrong++;
+  });
+  const total = s.qids.length;
+  const score = total > 0 ? correct / total : 0;
+  const tmpl = EXAM_TEMPLATES[s.templateId];
+  const passed = score >= (tmpl ? tmpl.passThreshold : 0.7);
+  const durationSeconds = Math.round((now - s.startTs) / 1000);
+
+  s.result = { totalQuestions: total, correct, wrong, unanswered, score, passed, durationSeconds, bySection, timeOut };
+
+  // Save to Firestore
+  try {
+    await window.fb.addDoc(window.fb.collection(window.fb.db, CERT_RESULTS_COLLECTION), {
+      sessionId: s.sessionId, templateId: s.templateId,
+      userId: s.userId, userEmail: s.userEmail, userName: s.userName,
+      startedAt: new Date(s.startTs), submittedAt: new Date(now),
+      durationSeconds, totalQuestions: total, correct, wrong, unanswered,
+      score, passed, timeOut, bySection
+    });
+  } catch (e) {
+    console.error('Cannot save cert result:', e.message);
+    alert('⚠️ Lỗi khi gửi kết quả: ' + e.message + '\n\nKết quả đã hiển thị nhưng chưa được lưu trên server. Chụp màn hình và liên hệ admin.');
+  }
+  renderCertExamResult();
+}
+
+function renderCertExamResult() {
+  const panel = document.getElementById('cert');
+  if (!_certActiveExam || !_certActiveExam.result) return;
+  const s = _certActiveExam;
+  const r = s.result;
+  const tmpl = EXAM_TEMPLATES[s.templateId];
+  const pct = Math.round(r.score * 100);
+  const grade = r.passed ? 'PASS' : 'FAIL';
+  const gradeColor = r.passed ? 'var(--green)' : 'var(--danger)';
+
+  panel.innerHTML = `
+    <div class="exam-result-card" style="text-align:center;">
+      <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase;">${r.timeOut ? '⏰ Hết giờ' : '📤 Đã nộp'} • ${escapeHtml(tmpl.name)}</div>
+      <h2 style="color:${gradeColor}; margin:10px 0 4px 0;">${grade}</h2>
+      <div style="font-size:56px; font-weight:700; color:${gradeColor}; line-height:1;">${pct}%</div>
+      <div style="margin:10px 0; color:var(--text-muted); font-size:14px;">${r.correct} đúng • ${r.wrong} sai • ${r.unanswered} bỏ trống / ${r.totalQuestions} câu</div>
+      <div style="margin:6px 0; font-size:13px; color:var(--text-muted);">
+        ⏱️ Thời gian: <strong>${Math.floor(r.durationSeconds / 60)} phút ${r.durationSeconds % 60}s</strong>
+      </div>
+      <div style="margin-top:14px; padding:14px; background:${r.passed ? 'var(--green-bg)' : 'var(--red-bg)'}; border-radius:8px; font-size:14px; color:${gradeColor}; font-weight:600;">
+        ${r.passed ? '🎉 Chúc mừng! Bạn đã đạt chuẩn ' + tmpl.name + '. Kết quả đã gửi admin.' : '❌ Chưa đạt threshold (' + Math.round(tmpl.passThreshold * 100) + '%). Liên hệ admin để biết về cơ hội thi lại.'}
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn-primary" onclick="_certActiveExam=null; renderCertExam();" style="padding:10px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:600;">↩️ Về danh sách Cert Exam</button>
+      </div>
+    </div>
+
+    <div class="exam-result-card">
+      <h3 style="color:var(--primary); margin:0 0 14px 0;">📊 Breakdown theo nhóm</h3>
+      ${Object.entries(r.bySection).sort((a,b) => a[0].localeCompare(b[0])).map(([sec, stats]) => {
+        const sPct = stats.total > 0 ? Math.round(stats.correct / stats.total * 100) : 0;
+        const sColor = sPct >= 70 ? 'var(--green)' : sPct >= 50 ? 'var(--warning)' : 'var(--danger)';
+        return '<div style="padding:8px 0; border-bottom:1px solid #F3F4F6;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+            '<span style="font-size:13px;">' + escapeHtml(sec) + '</span>' +
+            '<span style="font-size:13px; font-weight:700; color:' + sColor + ';">' + stats.correct + '/' + stats.total + ' (' + sPct + '%)</span>' +
+          '</div>' +
+          '<div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:' + sPct + '%; background:' + sColor + ';"></div></div>' +
+        '</div>';
+      }).join('')}
+    </div>
+
+    <div style="background:var(--yellow-bg); border-left:4px solid var(--warning); padding:12px 14px; border-radius:6px; font-size:13px;">
+      ⚠️ <strong>Lưu ý:</strong> Cert Exam này chỉ thi 1 lần. Kết quả hiển thị ở đây cũng là kết quả gửi admin. Admin có thể tạo session mới cho lần thi sau.
+    </div>
+  `;
+}
+
+async function viewMyCertResult(sessionId) {
+  const user = window.fb.auth.currentUser;
+  try {
+    const snap = await window.fb.getDocs(window.fb.query(
+      window.fb.collection(window.fb.db, CERT_RESULTS_COLLECTION),
+      window.fb.where('sessionId', '==', sessionId),
+      window.fb.where('userId', '==', user.uid)
+    ));
+    if (snap.empty) { alert('Bạn chưa làm session này.'); return; }
+    let result = null;
+    snap.forEach(d => result = d.data());
+    const session = _certSessions.find(s => s.docId === sessionId);
+    const tmpl = session ? EXAM_TEMPLATES[session.templateId] : null;
+    const pct = Math.round(result.score * 100);
+    const passed = result.passed;
+    alert((passed ? '✅ PASS' : '❌ FAIL') + ' — ' + pct + '%\n\n' +
+      tmpl.name + '\n' +
+      result.correct + '/' + result.totalQuestions + ' đúng • ' + Math.round(result.durationSeconds / 60) + ' phút');
+  } catch (e) {
+    alert('Lỗi: ' + e.message);
+  }
+}
+
+
+// ============ LEARNING ROADMAP / CURRICULUM ============
+const LEARNING_PATHS = [
+  {
+    id: 'junior', icon: '🌱', title: 'Lộ trình Junior Consultant', range: '0-2 năm — Khoảng 4-8 tuần intensive',
+    color: '#94A3B8',
+    description: 'Mục tiêu: nắm vững nền tảng BC core + nghiệp vụ cơ bản. Đủ để hỗ trợ senior trong các implementation đơn giản, làm config + demo module.',
+    milestones: [
+      { id: 'j-1', title: 'Milestone 1.1: Nền tảng BC Core',
+        sectionPrefix: '^[ABC]\\.',
+        description: 'Hiểu các khái niệm cốt lõi: Item Tracking (Lot/Serial/FEFO), Warehouse + Multi-UoM, Planning & Replenishment.',
+        targetAccuracy: 0.7, checkpoint: 'Có thể giải thích FEFO, Reordering Policy, Multi-UoM cho 1 đồng nghiệp mới' },
+      { id: 'j-2', title: 'Milestone 1.2: Pricing, Tài chính, Vận hành',
+        sectionPrefix: '^[DEF]\\.',
+        description: 'Pricing & Discount, tích hợp tài chính + đặc thù VN, các tình huống vận hành cơ bản.',
+        targetAccuracy: 0.7, checkpoint: 'Hiểu Posting Group, Dimension, e-invoice cơ bản' },
+      { id: 'j-3', title: 'Milestone 1.3: Nghiệp vụ thuần — Mua hàng & Kho',
+        sectionPrefix: '^[OP]\\. ',
+        description: 'Procurement (PR, PO, vendor evaluation), Warehouse (receiving, picking, cycle count).',
+        targetAccuracy: 0.6, checkpoint: 'Mô tả được P2P flow, KPI kho phổ biến' },
+      { id: 'j-4', title: 'Milestone 1.4: Nghiệp vụ thuần — Quality, Sales, Accounting',
+        sectionPrefix: '^[QRS]\\. ',
+        description: 'QC vs QA, HACCP, GMP, Order-to-Cash, Accounting Equation, P&L vs BS.',
+        targetAccuracy: 0.6, checkpoint: 'Phân biệt QC/QA, O2C/P2P, hiểu COGS calculation' },
+      { id: 'j-5', title: 'Milestone 1.5: First Mock Exam — Junior Level',
+        sectionPrefix: null,
+        description: 'Thi thử 30 câu trong 30 phút — phạm vi "Toàn bộ", target ≥60%.',
+        targetAccuracy: 0.6, checkpoint: 'Mock Exam ≥60%, đủ điều kiện L1 Junior',
+        isMockCheckpoint: true, mockCount: 30, mockMinutes: 30, mockTarget: 0.6 }
+    ]
+  },
+  {
+    id: 'mid', icon: '🚀', title: 'Lộ trình Mid-Level Consultant', range: '2-4 năm — Khoảng 6-10 tuần',
+    color: '#2E5C9E',
+    description: 'Mục tiêu: tự lead module-level project, thiết kế fit-gap, troubleshoot. Mạnh ở 1 ngành (Retail HOẶC Manufacturing).',
+    milestones: [
+      { id: 'm-1', title: 'Milestone 2.1: Mapping nghiệp vụ ↔ BC (Skill cầu nối)',
+        sectionPrefix: '^[G-N]\\.',
+        description: 'Master Data, Warehouse Bin, Replenishment, Transfer, Pricing, Order Flow, Localization VN, Đặc thù ngành.',
+        targetAccuracy: 0.7, checkpoint: 'Có thể design BC config cho 1 yêu cầu nghiệp vụ tự đặt' },
+      { id: 'm-2', title: 'Milestone 2.2: Nghiệp vụ nâng cao (Senior Key User Level)',
+        sectionPrefix: '^[OPQRS]2\\.',
+        description: 'Kraljic Matrix, TCO, VAS warehouse, Mock Recall, CAPA, JBP, Account Planning, EBITDA, ROI, FX Gain/Loss.',
+        targetAccuracy: 0.7, checkpoint: 'Thảo luận business case cấp Director với CFO/Plant Manager' },
+      { id: 'm-3', title: 'Milestone 2.3: Workshop Facilitation skills',
+        sectionPrefix: '^T\\.',
+        description: '6 nhóm tiêu chí, 4 cấp độ L1-L4, chuẩn bị/dẫn dắt/demo/decisions/follow-up.',
+        targetAccuracy: 0.75, checkpoint: 'Tự lead 1 workshop module-level đạt L3' },
+      { id: 'm-4', title: 'Milestone 2.4: Chọn ngành chuyên sâu (Retail HOẶC Manufacturing)',
+        sectionPrefix: null, customMatch: (s) => /^Z\d|^M\d/.test(s),
+        description: 'Đọc lý thuyết 12 chương + làm câu hỏi của 1 trong 2 ngành. Trở thành specialist.',
+        targetAccuracy: 0.65, checkpoint: 'Có thể consulting Pre-sales cho khách 1 ngành đã chọn' },
+      { id: 'm-5', title: 'Milestone 2.5: Mock Exam — Mid Level',
+        sectionPrefix: null,
+        description: 'Thi thử 50 câu trong 60 phút — Toàn bộ, target ≥70%.',
+        targetAccuracy: 0.7, checkpoint: 'Mock Exam ≥70%, đủ điều kiện L2 Mid-Level',
+        isMockCheckpoint: true, mockCount: 50, mockMinutes: 60, mockTarget: 0.7 }
+    ]
+  },
+  {
+    id: 'senior', icon: '⭐', title: 'Lộ trình Senior Consultant', range: '4-8 năm — Khoảng 10-16 tuần',
+    color: '#16A34A',
+    description: 'Mục tiêu: lead multi-module project, cross-industry, mentor team, design solution architecture. Mạnh ở CẢ Retail + Manufacturing.',
+    milestones: [
+      { id: 's-1', title: 'Milestone 3.1: Cross-Industry Mastery (Retail + Manufacturing)',
+        sectionPrefix: null, customMatch: (s) => /^Z\d|^M\d/.test(s),
+        description: 'Master CẢ 2 ngành. Có thể consulting cho khách Multi-format (vd: nhà sản xuất + retail brand riêng).',
+        targetAccuracy: 0.7, checkpoint: 'Cả Retail Industry ≥70% VÀ Manufacturing ≥70%' },
+      { id: 's-2', title: 'Milestone 3.2: Modern Stack — BC 2026 / Copilot / Fabric / AL Dev',
+        sectionPrefix: null, customMatch: (s) => /^[VWXYZ]\. /.test(s) || /^AA\./.test(s),
+        description: 'BC 2026 release wave, Copilot trong BC, Microsoft Fabric, Power Platform, AL Modern Dev.',
+        targetAccuracy: 0.7, checkpoint: 'Có thể tư vấn architectural decisions cho khách enterprise' },
+      { id: 's-3', title: 'Milestone 3.3: Case Study Mastery (tự luận)',
+        sectionPrefix: null, customMatch: null, isCaseMilestone: true,
+        description: 'Tự viết câu trả lời cho 14 case studies trong tab Tình huống, sau đó tự chấm key points. Đây là phần mở-end không thể vẹt.',
+        targetAccuracy: 0.6, checkpoint: 'Case Study Mastery ≥60%' },
+      { id: 's-4', title: 'Milestone 3.4: Cẩm nang Triển khai — Đọc full',
+        sectionPrefix: null, isPlaybookMilestone: true,
+        description: '15 phase × 95 quy tắc tribal knowledge. Đọc kỹ Phase 1-12, đặc biệt Politics + Vietnam Specific.',
+        targetAccuracy: 0, checkpoint: 'Đã đọc đủ 15 phase' },
+      { id: 's-5', title: 'Milestone 3.5: Kiến thức Tích hợp Master Level',
+        sectionPrefix: '^AB\\.',
+        description: 'Câu hỏi multi-choice ★★★★+ tổng hợp 25 chủ đề. Đo khả năng kết hợp kiến thức đa lĩnh vực.',
+        targetAccuracy: 0.65, checkpoint: 'Hard Accuracy ≥50%, First-try ≥65%' },
+      { id: 's-6', title: 'Milestone 3.6: Mock Exam Senior Level',
+        sectionPrefix: null,
+        description: 'Thi thử 80 câu trong 90 phút — Toàn bộ, target ≥75%. Có thể thi 2-3 lần để cải thiện.',
+        targetAccuracy: 0.75, checkpoint: 'Best Mock ≥75%, đủ điều kiện L3 Senior',
+        isMockCheckpoint: true, mockCount: 80, mockMinutes: 90, mockTarget: 0.75 }
+    ]
+  },
+  {
+    id: 'principal', icon: '👑', title: 'Lộ trình Principal Consultant', range: '8+ năm — Mastery & Maintenance',
+    color: '#7C3AED',
+    description: 'Mục tiêu: Strategic guidance, methodology owner, pre-sales support, mentor senior team. Maintain kiến thức + đóng góp.',
+    milestones: [
+      { id: 'p-1', title: 'Milestone 4.1: Toàn diện 6 axes ≥75%',
+        sectionPrefix: null, isAxesMilestone: true,
+        description: 'Tất cả 6 competency axes (Product, Business, Mapping, Retail, Mfg, Workshop) phải đạt ≥75%.',
+        targetAccuracy: 0.75, checkpoint: 'Min axis ≥75%' },
+      { id: 'p-2', title: 'Milestone 4.2: Hard Accuracy ≥70%',
+        sectionPrefix: null, isHardMilestone: true,
+        description: 'Trên 55 câu khó (★★★★+) phải đạt accuracy ≥70%. Không thể đoán may, không thể vẹt.',
+        targetAccuracy: 0.7, checkpoint: 'Hard Accuracy ≥70%' },
+      { id: 'p-3', title: 'Milestone 4.3: Deep Retention ≥100 câu',
+        sectionPrefix: null, isRetentionMilestone: true,
+        description: '≥100 câu SRS interval ≥30 ngày. Chứng minh thuộc lâu dài, không vẹt ngắn hạn.',
+        targetAccuracy: 0, checkpoint: '≥100 câu SRS ≥30d' },
+      { id: 'p-4', title: 'Milestone 4.4: Case Study Mastery ≥75%',
+        sectionPrefix: null, isCaseMilestone: true,
+        description: 'Tự luận + tự chấm trên 14 cases. Đạt 75% chứng tỏ thực sự hiểu sâu nghiệp vụ.',
+        targetAccuracy: 0.75, checkpoint: 'Case Mastery ≥75%' },
+      { id: 'p-5', title: 'Milestone 4.5: 3 Mock Exam, avg ≥80%, 30 ngày streak',
+        sectionPrefix: null, isMockCheckpoint: true, mockCount: 100, mockMinutes: 120, mockTarget: 0.8,
+        description: '3 lần Mock Exam trong điều kiện thi cử (không cheat, không SRS hint), điểm trung bình ≥80%. Maintain streak 30 ngày.',
+        targetAccuracy: 0.8, checkpoint: 'Avg Mock ≥80%, Streak ≥30d' },
+      { id: 'p-6', title: 'Milestone 4.6: Đóng góp Cẩm nang',
+        sectionPrefix: null, isContributeMilestone: true,
+        description: 'Vai trò Principal: contribute lại community. Thêm 5+ rules mới vào Cẩm nang (via Admin Editor). Mentor junior.',
+        targetAccuracy: 0, checkpoint: 'Optional — vai trò strategic, không strict' }
+    ]
+  }
+];
+
+function computeMilestoneProgress(milestone) {
+  // Returns { questionsTotal, questionsAnswered, accuracy, complete }
+  const ans = state.answered || {};
+  let questions = [];
+  if (milestone.sectionPrefix) {
+    const re = new RegExp(milestone.sectionPrefix);
+    questions = QUESTIONS.filter(q => q.section && re.test(q.section));
+  } else if (milestone.customMatch) {
+    questions = QUESTIONS.filter(q => q.section && milestone.customMatch(q.section));
+  }
+  const answered = questions.filter(q => ans[q.id]);
+  const correct = answered.filter(q => ans[q.id].correct).length;
+  const accuracy = answered.length > 0 ? correct / answered.length : 0;
+  const coverage = questions.length > 0 ? answered.length / questions.length : 0;
+
+  // Determine completion
+  let complete = false;
+  if (milestone.isMockCheckpoint) {
+    const mocks = state.mockExamHistory || [];
+    const matchingMocks = mocks.filter(m => m.total >= milestone.mockCount * 0.8); // close enough
+    const passedMocks = matchingMocks.filter(m => (m.correct / m.total) >= milestone.mockTarget);
+    complete = passedMocks.length >= 1;
+  } else if (milestone.isCaseMilestone) {
+    const caseAss = state.caseAssessments || {};
+    const assessedCases = Object.values(caseAss).filter(a => typeof a.score === 'number');
+    const mastery = assessedCases.length > 0 ? assessedCases.reduce((s, a) => s + a.score, 0) / assessedCases.length : 0;
+    complete = mastery >= milestone.targetAccuracy && assessedCases.length >= 3;
+  } else if (milestone.isPlaybookMilestone) {
+    // Assume read if user has visited playbook tab — proxy: any local tracking
+    // For simplicity: just shown as informational; user manually marks?
+    complete = (state._playbookRead === true) || false;
+  } else if (milestone.isAxesMilestone) {
+    const competencies = computeCompetencies();
+    const min = Math.min(...Object.values(competencies).map(c => c.score));
+    complete = min >= milestone.targetAccuracy;
+  } else if (milestone.isHardMilestone) {
+    let hardTotal = 0, hardCorrect = 0;
+    QUESTIONS.forEach(q => {
+      if (getQuestionDifficulty(q) >= 4 && ans[q.id]) {
+        hardTotal++; if (ans[q.id].correct) hardCorrect++;
+      }
+    });
+    const hardAccuracy = hardTotal > 0 ? hardCorrect / hardTotal : 0;
+    complete = hardAccuracy >= milestone.targetAccuracy && hardTotal >= 20;
+  } else if (milestone.isRetentionMilestone) {
+    const srs = state.srs || {};
+    const deep = Object.values(srs).filter(c => c.interval >= 30).length;
+    complete = deep >= 100;
+  } else if (milestone.isContributeMilestone) {
+    complete = false; // manual / strategic, never auto-mark
+  } else {
+    // Standard accuracy + coverage milestone
+    complete = accuracy >= milestone.targetAccuracy && coverage >= 0.6;
+  }
+
+  return { questions, total: questions.length, answered: answered.length, correct, accuracy, coverage, complete };
+}
+
+function getCurrentPathIdx() {
+  // Determine which path user is currently working on (the first one with incomplete milestones)
+  for (let i = 0; i < LEARNING_PATHS.length; i++) {
+    const path = LEARNING_PATHS[i];
+    const allComplete = path.milestones.every(m => computeMilestoneProgress(m).complete);
+    if (!allComplete) return i;
+  }
+  return LEARNING_PATHS.length - 1; // all complete → show last path
+}
+
+function startMilestone(pathIdx, milestoneIdx) {
+  const path = LEARNING_PATHS[pathIdx];
+  const milestone = path.milestones[milestoneIdx];
+  if (milestone.isMockCheckpoint) {
+    // Pre-configure mock exam
+    const cfg = loadMockConfig();
+    cfg.count = milestone.mockCount;
+    cfg.duration = milestone.mockMinutes;
+    cfg.scope = 'all';
+    saveMockConfig(cfg);
+    document.querySelector('[data-tab="mock"]').click();
+    return;
+  }
+  if (milestone.isCaseMilestone) {
+    document.querySelector('[data-tab="cases"]').click();
+    return;
+  }
+  if (milestone.isPlaybookMilestone) {
+    document.querySelector('[data-tab="playbook"]').click();
+    // Mark as read for tracking
+    state._playbookRead = true;
+    saveState();
+    return;
+  }
+  if (milestone.isAxesMilestone || milestone.isHardMilestone || milestone.isRetentionMilestone) {
+    document.querySelector('[data-tab="level"]').click();
+    return;
+  }
+  if (milestone.isContributeMilestone) {
+    document.querySelector('[data-tab="admin"]').click();
+    return;
+  }
+  // Default: filter quiz to milestone's sections
+  let matchingSections = [];
+  if (milestone.sectionPrefix) {
+    const re = new RegExp(milestone.sectionPrefix);
+    matchingSections = [...new Set(QUESTIONS.filter(q => q.section && re.test(q.section)).map(q => q.section))];
+  } else if (milestone.customMatch) {
+    matchingSections = [...new Set(QUESTIONS.filter(q => q.section && milestone.customMatch(q.section)).map(q => q.section))];
+  }
+  if (matchingSections.length > 0) {
+    // Pick the first section (alphabetical) and filter
+    state.filter = matchingSections.sort()[0];
+    state.currentIdx = 0;
+    saveState();
+    document.querySelector('[data-tab="quiz"]').click();
+    renderQuiz();
+  }
+}
+
+function renderRoadmap() {
+  const panel = document.getElementById('roadmap');
+  const currentIdx = getCurrentPathIdx();
+
+  panel.innerHTML = `
+    <div class="roadmap-intro">
+      <h2>🗺️ Lộ trình học tập ERP Consultant</h2>
+      <p>4 con đường tuần tự — từ Junior đến Principal. Mỗi path có các milestone cụ thể: học chủ đề gì, target accuracy bao nhiêu, checkpoint xác nhận đạt mức nào. Hãy đi tuần tự, không nhảy cóc.</p>
+    </div>
+
+    <div style="background:var(--blue-bg); padding:12px 16px; border-radius:8px; margin-bottom:14px; font-size:13px; line-height:1.6;">
+      💡 <strong>Cách dùng:</strong> Mỗi milestone có nút <strong>"Bắt đầu milestone"</strong> → tự động filter Quiz về phạm vi cần học, hoặc dẫn anh sang Mock Exam / Tình huống tương ứng. Khi đạt checkpoint, milestone tự đánh dấu ✓.
+    </div>
+
+    ${LEARNING_PATHS.map((path, pi) => {
+      const progresses = path.milestones.map(computeMilestoneProgress);
+      const completeCount = progresses.filter(p => p.complete).length;
+      const overallProgress = path.milestones.length > 0 ? completeCount / path.milestones.length : 0;
+      const isCurrent = pi === currentIdx;
+      const allComplete = completeCount === path.milestones.length;
+
+      return `
+        <div class="roadmap-path path-${pi+1} ${isCurrent ? 'current' : ''}">
+          <div class="roadmap-path-head">
+            <div class="roadmap-path-icon">${path.icon}</div>
+            <div style="flex:1;">
+              <div class="roadmap-path-title">${escapeHtml(path.title)} ${isCurrent ? '<span style="background:var(--primary); color:white; font-size:11px; padding:2px 8px; border-radius:8px; margin-left:8px;">ĐANG HỌC</span>' : ''} ${allComplete ? '<span style="background:var(--green); color:white; font-size:11px; padding:2px 8px; border-radius:8px; margin-left:8px;">✓ HOÀN THÀNH</span>' : ''}</div>
+              <div class="roadmap-path-range">${escapeHtml(path.range)}</div>
+            </div>
+          </div>
+          <div class="roadmap-path-desc">${escapeHtml(path.description)}</div>
+          <div class="roadmap-path-progress">
+            <span>${completeCount}/${path.milestones.length} milestones</span>
+            <div class="bar"><div style="width:${overallProgress * 100}%; background:${path.color};"></div></div>
+            <span>${Math.round(overallProgress * 100)}%</span>
+          </div>
+          ${path.milestones.map((m, mi) => {
+            const p = progresses[mi];
+            const accPct = Math.round(p.accuracy * 100);
+            return `
+              <div class="milestone ${p.complete ? 'complete' : ''}">
+                <div class="milestone-head">
+                  <div class="milestone-num">${p.complete ? '✓' : (mi + 1)}</div>
+                  <div style="flex:1;">
+                    <div class="milestone-title">${escapeHtml(m.title)}</div>
+                    <div class="milestone-meta">${p.total > 0 ? p.total + ' câu hỏi' : ''}${m.targetAccuracy > 0 ? ' • Target ≥' + Math.round(m.targetAccuracy * 100) + '% accuracy' : ''}</div>
+                  </div>
+                </div>
+                <div class="milestone-desc">${escapeHtml(m.description)}</div>
+                ${p.total > 0 ? `
+                  <div class="milestone-stats">
+                    <span>📊 Đã làm: <strong>${p.answered}/${p.total}</strong> (${Math.round(p.coverage * 100)}%)</span>
+                    <span>🎯 Accuracy: <strong style="color:${accPct >= 75 ? 'var(--green)' : accPct >= 50 ? 'var(--warning)' : 'var(--text-muted)'};">${p.answered > 0 ? accPct + '%' : '—'}</strong></span>
+                  </div>
+                ` : ''}
+                <div class="milestone-checkpoint">
+                  🎯 <strong>Checkpoint:</strong> ${escapeHtml(m.checkpoint)}
+                </div>
+                <div class="milestone-actions">
+                  <button onclick="startMilestone(${pi}, ${mi})">
+                    ${p.complete ? '🔁 Ôn lại' : '▶️ Bắt đầu milestone'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }).join('')}
+
+    <div style="background:var(--yellow-bg); border-left:4px solid var(--warning); padding:14px 16px; border-radius:8px; font-size:13px; line-height:1.7;">
+      <strong>💡 Lưu ý:</strong><br>
+      • Lộ trình là <strong>khuyến nghị</strong>, không bắt buộc. Anh có thể chọn học theo nhu cầu công việc cụ thể.<br>
+      • Mỗi level (Junior → Principal) yêu cầu cả accuracy + coverage tốt — không chỉ đúng vài câu nhưng phải biết rộng.<br>
+      • Milestone Mock Exam là <strong>kiểm chứng độc lập</strong> — quan trọng nhất để xác nhận thật sự đạt level (không chỉ vẹt qua SRS).<br>
+      • Sau khi hoàn tất 1 path → chuyển sang path kế tiếp. Path Principal có yếu tố <em>maintenance + contribution</em> — không bao giờ kết thúc.
+    </div>
+  `;
+}
+
+function renderLevelAssessment() {
   const ans = state.answered || {};
   const totalAnswered = Object.keys(ans).length;
   const totalCorrect = Object.values(ans).filter(a => a.correct).length;
