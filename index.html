@@ -2239,7 +2239,7 @@
     🔍 <span class="search-label">Tìm kiếm</span> <span class="kbd">/</span>
   </button>
   <div class="app-version-badge" id="app-version-badge" onclick="showVersionDetails()" title="Click để xem chi tiết version + force reload">
-    <span class="v-num" id="v-num">v3.0.0</span>
+    <span class="v-num" id="v-num">v3.1.1</span>
   </div>
   <h1>📘 HỌC VIỆN ERP CONSULTING</h1>
   <p>Giải pháp Dynamics và Hệ sinh thái Microsoft</p>
@@ -2308,6 +2308,7 @@
       <button class="menu-item tab-btn" data-tab="bookmarks"><span class="icon">📌</span><span>Bookmarks</span></button>
       <button class="menu-item tab-btn" data-tab="stats"><span class="icon">📊</span><span>Tiến độ</span></button>
       <button class="menu-item tab-btn" data-tab="level"><span class="icon">🎓</span><span>Cấp độ Consultant</span></button>
+      <button class="menu-item tab-btn" data-tab="competency"><span class="icon">🎯</span><span>Khung Năng lực</span></button>
     </div>
   </div>
 
@@ -2334,6 +2335,7 @@
       <button class="menu-item tab-btn" data-tab="admin" data-admin-subtab="certsessions"><span class="icon">📜</span><span>Cert Exam Sessions</span></button>
       <button class="menu-item tab-btn" data-tab="admin" data-admin-subtab="videos"><span class="icon">📺</span><span>Video manager</span></button>
       <button class="menu-item tab-btn" data-tab="admin" data-admin-subtab="library"><span class="icon">📚</span><span>Library manager</span></button>
+      <button class="menu-item tab-btn" data-tab="admin" data-admin-subtab="competency"><span class="icon">🎯</span><span>Competency editor</span></button>
     </div>
   </div>
 </nav>
@@ -2355,6 +2357,7 @@
   <div id="videos" class="panel"></div>
   <div id="library" class="panel"></div>
   <div id="community" class="panel"></div>
+  <div id="competency" class="panel"></div>
   <div id="level" class="panel"></div>
   <div id="glossary" class="panel"></div>
   <div id="bookmarks" class="panel"></div>
@@ -5037,6 +5040,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
       renderCommunity();
     }
     if (tab === "level") renderLevelAssessment();
+    if (tab === "competency") renderCompetencyFramework();
     if (tab === "roadmap") renderRoadmap();
     if (tab === "cert") renderCertExam();
   });
@@ -5044,10 +5048,12 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 
 // ============ APP VERSION (kiểm soát thay đổi) ============
 const APP_VERSION = {
-  num: 'v3.0.0',
+  num: 'v3.1.1',
   date: '2026-05-26',
   notes: [
-    '🌐 MỚI: Cộng đồng — Forum Q&A + Case Library + Resources + Training + Points (5 modules)',
+    '🎯 MỚI: Khung Năng lực NaviWorld — 7 nhóm × 42 năng lực × 7 cấp độ + ví dụ tốt/chưa tốt mỗi cấp',
+    '🎯 Admin Competency editor — sửa criteria + good/bad example cho 7 cấp',
+    '🌐 Cộng đồng — Forum Q&A + Case Library + Resources + Training + Points (5 modules)',
     '🌐 Forum: đặt câu hỏi · trả lời · upvote · accept answer · admin pin/lock/resolve',
     '🌐 Training: senior đăng course · member đăng ký · đánh giá 1-5 sao · auto avg rating',
     '🌐 Points: leaderboard auto từ 8 loại hoạt động · rank cá nhân hiển thị',
@@ -5155,6 +5161,7 @@ async function initApp() {
   try { await loadPlaybookOverrides(); } catch (e) {}
   try { await loadVideoOverrides(); } catch (e) {}
   try { await loadLibraryOverrides(); } catch (e) {}
+  try { await loadCompetencyOverrides(); } catch (e) {}
   renderQuiz();
   renderMergedCases();
   renderGotchas();
@@ -5610,6 +5617,7 @@ async function renderAdmin() {
         <button class="admin-subtab ${activeSubtab === 'certsessions' ? 'active' : ''}" onclick="setAdminSubtab('certsessions')">📜 Cert Exam Sessions</button>
         <button class="admin-subtab ${activeSubtab === 'videos' ? 'active' : ''}" onclick="setAdminSubtab('videos')">📺 Video manager (edit + tracking)</button>
         <button class="admin-subtab ${activeSubtab === 'library' ? 'active' : ''}" onclick="setAdminSubtab('library')">📚 Library manager (tài liệu)</button>
+        <button class="admin-subtab ${activeSubtab === 'competency' ? 'active' : ''}" onclick="setAdminSubtab('competency')">🎯 Competency editor</button>
       </div>
 
       ${activeSubtab === 'heatmap' ? renderDifficultyHeatmap(users) :
@@ -5618,7 +5626,8 @@ async function renderAdmin() {
         activeSubtab === 'playbook' ? '<div id="pbed-root">⏳ Đang tải editor cẩm nang...</div>' :
         activeSubtab === 'certsessions' ? '<div id="certadmin-root">⏳ Đang tải Cert Exam admin...</div>' :
         activeSubtab === 'videos' ? renderVideoTrackingAdmin(users) :
-        activeSubtab === 'library' ? renderLibraryAdmin(users) : `
+        activeSubtab === 'library' ? renderLibraryAdmin(users) :
+        activeSubtab === 'competency' ? renderCompetencyAdmin(users) : `
         <div class="admin-controls">
           <input type="search" id="admin-search" placeholder="🔍 Tìm theo email hoặc tên..." />
           <button onclick="exportUsersCSV()">📊 Export CSV</button>
@@ -9598,6 +9607,2282 @@ function renderLibraryAdmin(users) {
   `;
 
   return editorHtml + topHtml;
+}
+
+// ============ COMPETENCY FRAMEWORK ============
+// Khung năng lực consultant — sample placeholder (sẽ replace bằng data thật từ user).
+// Admin có thể edit qua UI; lưu Firestore competency_overrides.
+
+const COMPETENCY_LEVELS = [
+  {
+    "key": "director",
+    "labelVn": "Giám đốc",
+    "labelEn": "Director",
+    "tier": "L9",
+    "icon": "👑",
+    "color": "#7C3AED"
+  },
+  {
+    "key": "snr-mgr",
+    "labelVn": "Quản lý cấp cao",
+    "labelEn": "Senior Mgr",
+    "tier": "L8",
+    "icon": "💎",
+    "color": "#5B21B6"
+  },
+  {
+    "key": "mgr",
+    "labelVn": "Quản lý",
+    "labelEn": "Manager",
+    "tier": "L7",
+    "icon": "🎯",
+    "color": "#1E40AF"
+  },
+  {
+    "key": "dep-mgr",
+    "labelVn": "Phó Quản lý",
+    "labelEn": "Deputy Mgr",
+    "tier": "L6-6.5",
+    "icon": "🏅",
+    "color": "#0E7490"
+  },
+  {
+    "key": "principal",
+    "labelVn": "Tư vấn trưởng",
+    "labelEn": "Principal",
+    "tier": "L6-7",
+    "icon": "⭐",
+    "color": "#16A34A"
+  },
+  {
+    "key": "senior",
+    "labelVn": "Chuyên viên cao cấp",
+    "labelEn": "Senior",
+    "tier": "L4-5",
+    "icon": "🚀",
+    "color": "#0891B2"
+  },
+  {
+    "key": "consultant",
+    "labelVn": "Tư vấn viên",
+    "labelEn": "Consultant",
+    "tier": "L1-3",
+    "icon": "🌱",
+    "color": "#94A3B8"
+  }
+];
+
+// SAMPLE placeholder — sẽ replace bằng data thật từ file của user
+const COMPETENCY_GROUPS_BASE = [
+  {
+    "id": "group-1",
+    "index": "1",
+    "nameVn": "YÊU CẦU CHUYÊN MÔN CƠ BẢN",
+    "nameEn": "PROFESSIONAL REQUIREMENTS",
+    "icon": "🎯",
+    "competencies": [
+      {
+        "id": "ong-luc-su-chu-ong",
+        "index": "1.1",
+        "nameVn": "Động lực & Sự chủ động",
+        "nameEn": "Motivation & Initiative",
+        "levels": {
+          "director": {
+            "criteria": "Truyền cảm hứng và sự tự tin cho toàn bộ đội ngũ; chịu trách nhiệm cuối cùng về kết quả tổ chức\n\nInspires confidence across entire team; takes ultimate responsibility for organizational results",
+            "goodExample": "Giám đốc Minh luôn là người đến sớm nhất văn phòng, khi dự án gặp khó khăn, anh trực tiếp xuống hỗ trợ team đến khuya và không đổ lỗi cho ai.",
+            "badExample": "Giám đốc Hùng thường xuyên vắng mặt trong các cuộc họp quan trọng, để team tự xoay xở khi dự án go-live gặp sự cố."
+          },
+          "snr-mgr": {
+            "criteria": "Thể hiện cam kết cao nhất với công ty và khách hàng; xử lý áp lực chuyên nghiệp\n\nDemonstrates highest commitment to company and customers; handles pressure professionally",
+            "goodExample": "Chị Lan (Senior Manager) nhận điện thoại khách hàng lúc 10h đêm, vẫn kiên nhẫn hướng dẫn và xử lý issue urgent.",
+            "badExample": "Anh Tùng (Senior Manager) hay than phiền về áp lực công việc trước mặt nhân viên, làm team mất tinh thần."
+          },
+          "mgr": {
+            "criteria": "Chịu trách nhiệm duy trì tiêu chuẩn chất lượng; chấp nhận phê bình để cải thiện liên tục\n\nTakes responsibility for quality standards; accepts criticism for continuous improvement",
+            "goodExample": "Anh Đức (Manager) chủ động nhận lỗi khi deliverable bị trễ, đồng thời đưa ra plan recovery cụ thể.",
+            "badExample": "Chị Hoa (Manager) đổ lỗi cho team khi khách hàng phàn nàn về chất lượng, không nhận trách nhiệm quản lý."
+          },
+          "dep-mgr": {
+            "criteria": "Làm việc chăm chỉ và kiên trì để đạt kết quả; nỗ lực cải thiện hiệu suất\n\nWorks hard and persists to achieve results; strives to improve performance",
+            "goodExample": "Bạn Linh (Deputy) làm việc OT 3 ngày liên tục để hoàn thành config trước deadline, không cần ai nhắc.",
+            "badExample": "Bạn Nam (Deputy) thường xuyên xin nghỉ đúng lúc dự án cần người, không có tinh thần trách nhiệm."
+          },
+          "principal": {
+            "criteria": "Theo đuổi excellence kỹ thuật; tự chủ động nghiên cứu và cập nhật kiến thức mới nhất\n\nPursues technical excellence; self-driven to research and update latest knowledge",
+            "goodExample": "Anh Khoa (Principal Consultant) tự nghiên cứu Copilot Studio vào cuối tuần và chia sẻ cho team.",
+            "badExample": "Chị Thảo (Principal) chỉ làm đúng những gì được giao, không bao giờ tự tìm hiểu tính năng mới của D365."
+          },
+          "senior": {
+            "criteria": "Được nhìn nhận là người tận tâm và có động lực cao\n\nIs seen as conscientious and highly motivated",
+            "goodExample": "Bạn Hải (Senior) được mọi người nhận xét là người nhiệt huyết, luôn sẵn sàng giúp đỡ đồng nghiệp.",
+            "badExample": "Bạn Mai (Senior) hay có thái độ làm cho xong việc, không quan tâm đến chất lượng deliverable."
+          },
+          "consultant": {
+            "criteria": "Thể hiện thái độ tích cực và niềm tự hào về công ty; quản lý thời gian hiệu quả\n\nDisplays positive attitude and pride in company; manages time effectively",
+            "goodExample": "Bạn Tuấn (Consultant) mới vào nhưng luôn đến sớm, chuẩn bị kỹ trước mỗi meeting với khách hàng.",
+            "badExample": "Bạn Ngọc (Consultant) thường xuyên đi muộn, không chuẩn bị gì trước khi đi workshop với khách."
+          }
+        }
+      },
+      {
+        "id": "su-chinh-truc",
+        "index": "1.2",
+        "nameVn": "Sự chính trực",
+        "nameEn": "Integrity",
+        "levels": {
+          "director": {
+            "criteria": "Duy trì sự chuyên nghiệp, chính trực và bảo mật mọi lúc; là hình mẫu đạo đức\n\nMaintains professionalism, integrity and confidentiality at all times; acts as ethics role model",
+            "goodExample": "Giám đốc Minh từ chối deal béo bở vì phát hiện có dấu hiệu không minh bạch từ phía khách hàng.",
+            "badExample": "Giám đốc Hùng chấp nhận 'phí bôi trơn' để thắng deal, vi phạm chính sách công ty."
+          },
+          "snr-mgr": {
+            "criteria": "Là hình mẫu về chuyên nghiệp và đạo đức cho tổ chức\n\nActs as role model for professionalism and ethics across organization",
+            "goodExample": "Chị Lan (Senior Manager) luôn giữ bảo mật thông tin khách hàng, không bao giờ tiết lộ cho đối thủ.",
+            "badExample": "Anh Tùng (Senior Manager) vô tình tiết lộ thông tin dự án của khách hàng A cho khách hàng B."
+          },
+          "mgr": {
+            "criteria": "Thành thật với khách hàng về các hạn chế và rủi ro; duy trì độc lập\n\nIs upfront with customers about limitations and risks; maintains independence",
+            "goodExample": "Anh Đức (Manager) thành thật nói với khách rằng tính năng này D365 standard không có, cần custom.",
+            "badExample": "Chị Hoa (Manager) hứa với khách là làm được để ký hợp đồng, sau đó team không thể deliver."
+          },
+          "dep-mgr": {
+            "criteria": "Thành thật với khách hàng khi không chắc chắn câu trả lời\n\nIs honest with customers when unsure of the answers",
+            "goodExample": "Bạn Linh (Deputy) nói thẳng với khách: 'Em chưa chắc chắn câu trả lời, để em kiểm tra và phản hồi sau.'",
+            "badExample": "Bạn Nam (Deputy) hay bịa câu trả lời để không bị khách đánh giá là thiếu kiến thức."
+          },
+          "principal": {
+            "criteria": "Duy trì sự độc lập chuyên nghiệp và chính trực trong mọi tương tác kỹ thuật\n\nMaintains professional independence and integrity in all technical interactions",
+            "goodExample": "Anh Khoa (Principal) duy trì tính độc lập, từ chối khách yêu cầu làm tắt quy trình để tiết kiệm chi phí.",
+            "badExample": "Chị Thảo (Principal) làm theo yêu cầu khách dù biết là sai best practice để giữ quan hệ."
+          },
+          "senior": {
+            "criteria": "Duy trì sự chuyên nghiệp và độc lập trong mọi tương tác\n\nMaintains professionalism and independence in all interactions",
+            "goodExample": "Bạn Hải (Senior) báo cáo trung thực effort thực tế dù vượt estimate ban đầu.",
+            "badExample": "Bạn Mai (Senior) giấu việc đã hoàn thành muộn để tránh bị đánh giá không tốt."
+          },
+          "consultant": {
+            "criteria": "Trung thực trong báo cáo công việc và tương tác với đồng nghiệp\n\nIs honest in work reporting and interactions with colleagues",
+            "goodExample": "Bạn Tuấn (Consultant) thừa nhận lỗi config và xin lỗi khi phát hiện sai sót.",
+            "badExample": "Bạn Ngọc (Consultant) đổ lỗi cho tài liệu requirement không rõ khi bị phát hiện config sai."
+          }
+        }
+      },
+      {
+        "id": "trach-nhiem-ca-nhan",
+        "index": "1.3",
+        "nameVn": "Trách nhiệm cá nhân",
+        "nameEn": "Personal Responsibility",
+        "levels": {
+          "director": {
+            "criteria": "Chịu trách nhiệm cuối cùng về kết quả và hành động của tổ chức\n\nTakes ultimate responsibility for organizational results and actions",
+            "goodExample": "Giám đốc Minh đứng ra nhận trách nhiệm trước board khi dự án lớn thất bại, không đổ lỗi cho team.",
+            "badExample": "Giám đốc Hùng đổ lỗi cho Manager khi dự án có vấn đề, không nhận trách nhiệm lãnh đạo."
+          },
+          "snr-mgr": {
+            "criteria": "Chịu trách nhiệm về kết quả dự án và hiệu suất đội nhóm\n\nTakes responsibility for project results and team performance",
+            "goodExample": "Chị Lan (Senior Manager) chịu trách nhiệm về performance yếu của team và lập plan cải thiện.",
+            "badExample": "Anh Tùng (Senior Manager) than phiền rằng team yếu nhưng không làm gì để hỗ trợ."
+          },
+          "mgr": {
+            "criteria": "Chịu trách nhiệm cung cấp dịch vụ chất lượng và quản lý rủi ro dự án\n\nTakes responsibility for quality service delivery and project risk management",
+            "goodExample": "Anh Đức (Manager) chịu trách nhiệm khi dự án delay và làm việc overtime cùng team để recover.",
+            "badExample": "Chị Hoa (Manager) báo cáo BOD rằng delay là do team không làm việc hiệu quả."
+          },
+          "dep-mgr": {
+            "criteria": "Chịu trách nhiệm về deliverables được giao và chủ động báo cáo vấn đề\n\nTakes responsibility for assigned deliverables and proactively reports issues",
+            "goodExample": "Bạn Linh (Deputy) chủ động báo cáo risk khi phát hiện deliverable có khả năng bị trễ.",
+            "badExample": "Bạn Nam (Deputy) giấu vấn đề cho đến khi deadline đã qua mới báo cáo."
+          },
+          "principal": {
+            "criteria": "Chịu trách nhiệm về chất lượng kỹ thuật của giải pháp đề xuất\n\nTakes responsibility for technical quality of proposed solutions",
+            "goodExample": "Anh Khoa (Principal) chịu trách nhiệm về solution design và fix ngay khi phát hiện issue.",
+            "badExample": "Chị Thảo (Principal) đổ lỗi cho requirement không rõ khi solution không work."
+          },
+          "senior": {
+            "criteria": "Chịu trách nhiệm về công việc được giao và hoàn thành đúng hạn\n\nTakes responsibility for assigned work and completes on time",
+            "goodExample": "Bạn Hải (Senior) hoàn thành deliverable đúng hạn và chất lượng như cam kết.",
+            "badExample": "Bạn Mai (Senior) hay xin gia hạn vào phút cuối với lý do không hợp lý."
+          },
+          "consultant": {
+            "criteria": "Chịu trách nhiệm về phần công việc được giao và chủ động hỏi khi cần\n\nTakes responsibility for assigned tasks and proactively asks when needed",
+            "goodExample": "Bạn Tuấn (Consultant) chủ động hỏi ngay khi không hiểu task để không làm sai.",
+            "badExample": "Bạn Ngọc (Consultant) im lặng làm theo cách hiểu riêng rồi submit deliverable sai."
+          }
+        }
+      },
+      {
+        "id": "su-to-mo-hoc-hoi",
+        "index": "1.4",
+        "nameVn": "Sự tò mò học hỏi",
+        "nameEn": "Intellectual Curiosity",
+        "levels": {
+          "director": {
+            "criteria": "Cập nhật về các phát triển kỹ thuật và pháp luật mới nhất; định hướng chiến lược đổi mới\n\nKeeps up-to-date with latest developments; sets strategic direction for innovation",
+            "goodExample": "Giám đốc Minh định hướng practice chuyển sang AI/Copilot sau khi nghiên cứu xu hướng Microsoft Ignite.",
+            "badExample": "Giám đốc Hùng không quan tâm đến công nghệ mới, vẫn chỉ tập trung vào D365 classic."
+          },
+          "snr-mgr": {
+            "criteria": "Sử dụng nguồn bên ngoài để phát triển kiến thức và mạng lưới thông tin\n\nUses external sources to develop knowledge and information network",
+            "goodExample": "Chị Lan (Senior Manager) tham gia Microsoft Partner Network events để mở rộng network và kiến thức.",
+            "badExample": "Anh Tùng (Senior Manager) không đầu tư thời gian networking, chỉ làm việc trong phạm vi công ty."
+          },
+          "mgr": {
+            "criteria": "Học từ kinh nghiệm quá khứ và áp dụng vào tình huống mới\n\nLearns from past experiences and applies to new situations",
+            "goodExample": "Anh Đức (Manager) áp dụng lessons learned từ dự án trước để tránh lỗi tương tự.",
+            "badExample": "Chị Hoa (Manager) lặp lại cùng sai lầm ở nhiều dự án vì không review kinh nghiệm."
+          },
+          "dep-mgr": {
+            "criteria": "Áp dụng kiến thức từ kinh nghiệm bản thân và đồng nghiệp\n\nApplies knowledge gained from own and colleagues' experience",
+            "goodExample": "Bạn Linh (Deputy) học hỏi từ cách senior xử lý khách hàng khó tính và áp dụng cho mình.",
+            "badExample": "Bạn Nam (Deputy) không quan sát và học hỏi từ đồng nghiệp có kinh nghiệm."
+          },
+          "principal": {
+            "criteria": "Nghiên cứu và thử nghiệm công nghệ mới, tính năng mới của D365\n\nResearches and experiments with new technologies and new D365 features",
+            "goodExample": "Anh Khoa (Principal) dành weekend để thử nghiệm Power Platform preview features.",
+            "badExample": "Chị Thảo (Principal) chỉ dùng tính năng đã biết, không bao giờ thử tính năng mới."
+          },
+          "senior": {
+            "criteria": "Chủ động tìm kiếm cơ hội đào tạo và phát triển bản thân\n\nActively seeks training and development opportunities",
+            "goodExample": "Bạn Hải (Senior) chủ động đăng ký training D365 Finance mới và chia sẻ lại cho team.",
+            "badExample": "Bạn Mai (Senior) không tham gia training khi có cơ hội vì 'quá bận'."
+          },
+          "consultant": {
+            "criteria": "Áp dụng kiến thức từ training và kinh nghiệm ban đầu vào công việc\n\nApplies knowledge gained from training and initial experience to work",
+            "goodExample": "Bạn Tuấn (Consultant) áp dụng ngay những gì học được từ training vào dự án đang làm.",
+            "badExample": "Bạn Ngọc (Consultant) đi training xong không nhớ gì, không áp dụng được."
+          }
+        }
+      },
+      {
+        "id": "kha-nang-phan-tich",
+        "index": "1.5",
+        "nameVn": "Khả năng phân tích",
+        "nameEn": "Analytical Ability",
+        "levels": {
+          "director": {
+            "criteria": "Đánh giá và phê duyệt kiến trúc giải pháp tổng thể cho khách hàng\n\nReviews and approves overall solution architecture for customers",
+            "goodExample": "Giám đốc Minh review và approve architecture tổng thể, đảm bảo tất cả module integrate nhịp nhàng.",
+            "badExample": "Giám đốc Hùng approve solution mà không review kỹ, dẫn đến integration issues sau go-live."
+          },
+          "snr-mgr": {
+            "criteria": "Thiết kế giải pháp end-to-end cho dự án phức tạp, liên module\n\nDesigns end-to-end solutions for complex, cross-module projects",
+            "goodExample": "Chị Lan (Senior Manager) thiết kế solution end-to-end cho dự án phức tạp liên quan 5 module.",
+            "badExample": "Anh Tùng (Senior Manager) chỉ focus vào 1 module mà không xem xét tác động đến module khác."
+          },
+          "mgr": {
+            "criteria": "Dẫn dắt các buổi workshop thu thập yêu cầu hiệu quả\n\nLeads requirement gathering workshops effectively",
+            "goodExample": "Anh Đức (Manager) dẫn dắt workshop hiệu quả, thu thập được toàn bộ requirement trong 2 ngày.",
+            "badExample": "Chị Hoa (Manager) workshop lan man, không có agenda rõ ràng, mất 5 ngày vẫn thiếu thông tin."
+          },
+          "dep-mgr": {
+            "criteria": "Thu thập và phân tích yêu cầu khách hàng một cách có hệ thống\n\nCollects and analyzes customer requirements systematically",
+            "goodExample": "Bạn Linh (Deputy) thu thập requirement có hệ thống theo template, không bỏ sót thông tin quan trọng.",
+            "badExample": "Bạn Nam (Deputy) ghi chép lộn xộn, sau workshop không nhớ khách yêu cầu gì."
+          },
+          "principal": {
+            "criteria": "Phân tích sâu và thiết kế giải pháp kỹ thuật phức tạp\n\nPerforms deep analysis and designs complex technical solutions",
+            "goodExample": "Anh Khoa (Principal) phân tích sâu và thiết kế integration pattern phức tạp giữa D365 và SAP.",
+            "badExample": "Chị Thảo (Principal) chỉ làm được những solution đơn giản, gặp case phức tạp là phải nhờ help."
+          },
+          "senior": {
+            "criteria": "Thu thập yêu cầu và ghi chép chi tiết cho workshop\n\nCollects requirements and takes detailed workshop notes",
+            "goodExample": "Bạn Hải (Senior) ghi chép workshop notes chi tiết, capture được cả những concern nhỏ của khách.",
+            "badExample": "Bạn Mai (Senior) ghi chép sơ sài, thiếu nhiều detail quan trọng cho việc design."
+          },
+          "consultant": {
+            "criteria": "Hỗ trợ thu thập yêu cầu và ghi chép meeting notes chính xác\n\nSupports requirement gathering and takes accurate meeting notes",
+            "goodExample": "Bạn Tuấn (Consultant) hỗ trợ ghi meeting notes chính xác và format gọn gàng.",
+            "badExample": "Bạn Ngọc (Consultant) ghi meeting notes không đầy đủ, thiếu action items và deadline."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "group-2",
+    "index": "2",
+    "nameVn": "PHÁT TRIỂN KINH DOANH",
+    "nameEn": "BUSINESS DEVELOPMENT DIMENSION",
+    "icon": "💼",
+    "competencies": [
+      {
+        "id": "nhan-thuc-thuong-mai",
+        "index": "2.1",
+        "nameVn": "Nhận thức thương mại",
+        "nameEn": "Commercial Awareness",
+        "levels": {
+          "director": {
+            "criteria": "Nắm bắt xu hướng vĩ mô (kinh tế, chính sách, công nghệ) và dự đoán tác động\n\nCaptures macro trends and anticipates impact on customers",
+            "goodExample": "Giám đốc Minh dự đoán Nghị định 123 sẽ ảnh hưởng đến module Tax và chuẩn bị solution trước 6 tháng.",
+            "badExample": "Giám đốc Hùng bị bất ngờ khi quy định mới ban hành, không có plan chuẩn bị."
+          },
+          "snr-mgr": {
+            "criteria": "Có kiến thức sâu về quy định, tình hình chính trị-kinh tế và tác động\n\nDeep knowledge of regulations, political-economic situation and impact",
+            "goodExample": "Chị Lan (Senior Manager) am hiểu sâu về Thông tư 200 và tác động đến Chart of Account setup.",
+            "badExample": "Anh Tùng (Senior Manager) không nắm rõ quy định kế toán, phải hỏi lại khách hàng."
+          },
+          "mgr": {
+            "criteria": "Tư vấn và giải thích tác động của thay đổi quy định đến khách hàng\n\nAdvises and interprets impact of regulation changes on customers",
+            "goodExample": "Anh Đức (Manager) giải thích rõ cho khách tác động của Nghị định mới đến quy trình nhập khẩu.",
+            "badExample": "Chị Hoa (Manager) không thể tư vấn được khi khách hỏi về thay đổi quy định xuất nhập khẩu."
+          },
+          "dep-mgr": {
+            "criteria": "Tư vấn về thay đổi quy định và tác động đến dự án\n\nAdvises on regulation changes and project impact",
+            "goodExample": "Bạn Linh (Deputy) cập nhật team về thay đổi quy định thuế GTGT mới và impact đến dự án.",
+            "badExample": "Bạn Nam (Deputy) không theo dõi thay đổi quy định, để khách hàng phát hiện trước."
+          },
+          "principal": {
+            "criteria": "Là chuyên gia am hiểu sâu về quy trình nghiệp vụ trong lĩnh vực chuyên môn\n\nIs deep expert in business processes within area of specialization",
+            "goodExample": "Anh Khoa (Principal) là chuyên gia về quy trình nghiệp vụ Manufacturing trong D365 SCM.",
+            "badExample": "Chị Thảo (Principal) chỉ biết config cơ bản, không hiểu sâu về business process."
+          },
+          "senior": {
+            "criteria": "Cập nhật về thay đổi quy định và tác động đến công việc tư vấn\n\nKeeps up-to-date on regulation changes and consulting impact",
+            "goodExample": "Bạn Hải (Senior) đọc và update team về thay đổi VAT regulations hàng tháng.",
+            "badExample": "Bạn Mai (Senior) không quan tâm đến thay đổi quy định, chỉ làm theo cách cũ."
+          },
+          "consultant": {
+            "criteria": "Phát triển kiến thức chung về kinh tế, chính trị, pháp lý\n\nDevelops general knowledge of economic, political, legal issues",
+            "goodExample": "Bạn Tuấn (Consultant) chủ động đọc tin tức kinh tế để hiểu context khách hàng.",
+            "badExample": "Bạn Ngọc (Consultant) không quan tâm đến môi trường kinh doanh của khách hàng."
+          }
+        }
+      },
+      {
+        "id": "ban-hang",
+        "index": "2.2",
+        "nameVn": "Bán hàng",
+        "nameEn": "Sales",
+        "levels": {
+          "director": {
+            "criteria": "Bán, thuyết phục, trấn an và đàm phán ở cấp cao nhất\n\nSells, convinces, reassures, persuades and negotiates at highest level",
+            "goodExample": "Giám đốc Minh thuyết phục được CEO khách hàng ký hợp đồng 5 tỷ sau buổi meeting 2 tiếng.",
+            "badExample": "Giám đốc Hùng không thể đàm phán với C-level, để mất deal quan trọng."
+          },
+          "snr-mgr": {
+            "criteria": "Thuyết phục khách hàng chính thức chỉ định công ty và đàm phán phí\n\nConvinces customers to formally appoint company and negotiates fees",
+            "goodExample": "Chị Lan (Senior Manager) đàm phán thành công giá hợp đồng tăng 20% so với estimate ban đầu.",
+            "badExample": "Anh Tùng (Senior Manager) bị khách ép giá thấp hơn cost, dự án lỗ từ đầu."
+          },
+          "mgr": {
+            "criteria": "Có khả năng thuyết phục, trấn an và đàm phán khi phù hợp\n\nIs able to convince, reassure, persuade and negotiate as appropriate",
+            "goodExample": "Anh Đức (Manager) thuyết phục khách hàng về giá trị của additional modules và close upsell.",
+            "badExample": "Chị Hoa (Manager) không dám đề xuất upsell dù biết khách hàng cần thêm tính năng."
+          },
+          "dep-mgr": {
+            "criteria": "Tìm kiếm cơ hội kinh doanh mới từ khách hàng hiện tại\n\nLooks for new business opportunities from existing customers",
+            "goodExample": "Bạn Linh (Deputy) phát hiện khách cần thêm module Warehouse và báo cáo Manager để follow up.",
+            "badExample": "Bạn Nam (Deputy) bỏ qua cơ hội bán thêm dù khách hàng mention nhiều lần."
+          },
+          "principal": {
+            "criteria": "Đóng góp chuyên môn kỹ thuật trong việc xây dựng đề xuất và ước lượng\n\nContributes technical expertise in building proposals and estimates",
+            "goodExample": "Anh Khoa (Principal) đóng góp technical expertise để xây dựng proposal cạnh tranh.",
+            "badExample": "Chị Thảo (Principal) không tham gia pre-sales, để sales team tự estimate effort sai."
+          },
+          "senior": {
+            "criteria": "Cảnh giác với nhu cầu bổ sung của khách hàng và thông báo cấp trên\n\nIs alert for customers' additional needs and informs superiors",
+            "goodExample": "Bạn Hải (Senior) phát hiện khách cần reporting và thông báo ngay cho sales team.",
+            "badExample": "Bạn Mai (Senior) không quan tâm đến việc tìm kiếm cơ hội bổ sung cho công ty."
+          },
+          "consultant": {
+            "criteria": "Nhận thức về cơ hội kinh doanh bổ sung trong quá trình làm việc\n\nIs aware of additional business opportunities during work",
+            "goodExample": "Bạn Tuấn (Consultant) nhận ra khách hàng muốn mở rộng dự án và báo cáo Manager.",
+            "badExample": "Bạn Ngọc (Consultant) không chú ý khi khách hàng mention nhu cầu mới."
+          }
+        }
+      },
+      {
+        "id": "quan-ly-moi-quan-he",
+        "index": "2.3",
+        "nameVn": "Quản lý mối quan hệ",
+        "nameEn": "Relationship Management",
+        "levels": {
+          "director": {
+            "criteria": "Thiết lập và duy trì quan hệ chiến lược với C-level/người ra quyết định\n\nEstablishes and maintains strategic relationships with C-level/decision makers",
+            "goodExample": "Giám đốc Minh duy trì quan hệ với CFO khách hàng lớn, được mời tham gia strategic planning.",
+            "badExample": "Giám đốc Hùng chỉ liên hệ khách hàng khi cần ký hợp đồng mới, không maintain relationship."
+          },
+          "snr-mgr": {
+            "criteria": "Phát triển quan hệ hiệu quả với lãnh đạo cấp cao của khách hàng\n\nDevelops effective relationships with senior management of customers",
+            "goodExample": "Chị Lan (Senior Manager) được IT Director tin tưởng, được consult trước khi làm tender.",
+            "badExample": "Anh Tùng (Senior Manager) quan hệ xa cách với lãnh đạo khách hàng, chỉ qua email."
+          },
+          "mgr": {
+            "criteria": "Phát triển quan hệ và mạng lưới rộng trong tổ chức khách hàng\n\nDevelops effective relationships and networks across customer organization",
+            "goodExample": "Anh Đức (Manager) xây dựng network rộng trong tổ chức khách hàng từ finance đến operations.",
+            "badExample": "Chị Hoa (Manager) chỉ làm việc với 1 key contact, khi người đó nghỉ thì mất quan hệ."
+          },
+          "dep-mgr": {
+            "criteria": "Xây dựng quan hệ hiệu quả với nhiều cấp nhân viên khách hàng\n\nBuilds effective relationships with multiple levels of customer staff",
+            "goodExample": "Bạn Linh (Deputy) được nhiều key users khách hàng tin tưởng và chủ động liên hệ khi có vấn đề.",
+            "badExample": "Bạn Nam (Deputy) giao tiếp cứng nhắc, khách hàng không muốn làm việc cùng."
+          },
+          "principal": {
+            "criteria": "Được khách hàng tin tưởng như chuyên gia kỹ thuật/nghiệp vụ đáng tin cậy\n\nIs trusted by customers as a reliable technical/functional expert",
+            "goodExample": "Anh Khoa (Principal) được khách hàng đích danh request cho các dự án mới vì tin tưởng.",
+            "badExample": "Chị Thảo (Principal) không xây dựng được relationship, khách hàng không nhớ tên."
+          },
+          "senior": {
+            "criteria": "Liên tục phát triển hiểu biết về hoạt động kinh doanh khách hàng\n\nContinually develops understanding of customer business operations",
+            "goodExample": "Bạn Hải (Senior) phát triển hiểu biết sâu về business của khách qua nhiều cuộc trò chuyện.",
+            "badExample": "Bạn Mai (Senior) chỉ biết technical requirements, không hiểu context kinh doanh."
+          },
+          "consultant": {
+            "criteria": "Xây dựng quan hệ tích cực, chuyên nghiệp với nhân viên khách hàng\n\nBuilds positive, professional relationships with customer staff",
+            "goodExample": "Bạn Tuấn (Consultant) xây dựng quan hệ tích cực với end-users, được họ hỗ trợ testing.",
+            "badExample": "Bạn Ngọc (Consultant) giao tiếp thiếu chuyên nghiệp, end-users né tránh làm việc cùng."
+          }
+        }
+      },
+      {
+        "id": "phat-trien-kinh-doanh",
+        "index": "2.4",
+        "nameVn": "Phát triển kinh doanh",
+        "nameEn": "Business Development",
+        "levels": {
+          "director": {
+            "criteria": "Ra quyết định kinh doanh chiến lược và dài hạn cho công ty\n\nMakes strategic and long-term business decisions for company",
+            "goodExample": "Giám đốc Minh quyết định đầu tư vào Practice AI/Copilot trước khi thị trường demand.",
+            "badExample": "Giám đốc Hùng bỏ lỡ cơ hội đầu tư vào LS Retail khi thị trường còn mới."
+          },
+          "snr-mgr": {
+            "criteria": "Báo giá phí phù hợp dựa trên phạm vi và giá trị dự án\n\nQuotes appropriate fees based on project scope and value",
+            "goodExample": "Chị Lan (Senior Manager) định giá hợp đồng phù hợp với complexity và value delivery.",
+            "badExample": "Anh Tùng (Senior Manager) báo giá quá cao khiến mất deal, hoặc quá thấp khiến dự án lỗ."
+          },
+          "mgr": {
+            "criteria": "Chủ động tìm kiếm và duy trì lợi nhuận cho các dự án\n\nProactively seeks to maintain profitability for projects",
+            "goodExample": "Anh Đức (Manager) chủ động review project margin hàng tháng và đưa ra action để cải thiện.",
+            "badExample": "Chị Hoa (Manager) không theo dõi profitability, để dự án lỗ mà không biết."
+          },
+          "dep-mgr": {
+            "criteria": "Nhận thức nhu cầu của khách hàng và liên hệ với các phòng ban phù hợp\n\nIs aware of customer needs and liaises with appropriate departments",
+            "goodExample": "Bạn Linh (Deputy) nhận ra khách hàng cần module Budgeting và liên hệ Sales team.",
+            "badExample": "Bạn Nam (Deputy) bỏ qua nhu cầu khách hàng vì 'không phải việc của mình'."
+          },
+          "principal": {
+            "criteria": "Xác định cơ hội mở rộng phạm vi dự án dựa trên hiểu biết kỹ thuật sâu\n\nIdentifies scope expansion opportunities based on deep technical understanding",
+            "goodExample": "Anh Khoa (Principal) phát hiện cơ hội technical upgrade và đề xuất project mới với khách.",
+            "badExample": "Chị Thảo (Principal) chỉ làm đúng scope, không phát hiện opportunity expansion."
+          },
+          "senior": {
+            "criteria": "Liên lạc với các phòng ban để có hiểu biết rộng về dịch vụ công ty\n\nKeeps in contact with departments for broad understanding of company services",
+            "goodExample": "Bạn Hải (Senior) hiểu rõ các dịch vụ công ty cung cấp và giới thiệu khi phù hợp.",
+            "badExample": "Bạn Mai (Senior) không biết công ty còn có dịch vụ gì ngoài D365 implementation."
+          },
+          "consultant": {
+            "criteria": "Cập nhật về dịch vụ công ty bằng cách đọc tài liệu nội bộ và trao đổi\n\nKeeps up-to-date on company services by reading internal publications",
+            "goodExample": "Bạn Tuấn (Consultant) đọc internal wiki để hiểu về các services và case studies công ty.",
+            "badExample": "Bạn Ngọc (Consultant) không quan tâm tìm hiểu về công ty và các dịch vụ."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "group-3",
+    "index": "3",
+    "nameVn": "THỰC HIỆN DỰ ÁN KHÁCH HÀNG",
+    "nameEn": "CLIENT ENGAGEMENT DELIVERY DIMENSION",
+    "icon": "🤝",
+    "competencies": [
+      {
+        "id": "lap-ke-hoach",
+        "index": "3.1",
+        "nameVn": "Lập kế hoạch",
+        "nameEn": "Planning",
+        "levels": {
+          "director": {
+            "criteria": "Phân bổ thời gian và nguồn lực cho các khách hàng/dự án một cách tối ưu\n\nAllocates time and resources to customers/projects optimally",
+            "goodExample": "Giám đốc Minh phân bổ resource tối ưu cho 5 dự án song song, không ai bị overload hay idle.",
+            "badExample": "Giám đốc Hùng assign cùng 1 người cho 3 dự án urgent, dẫn đến burnout và delay."
+          },
+          "snr-mgr": {
+            "criteria": "Cân bằng chất lượng dịch vụ và lợi nhuận dự án\n\nBalances service quality with project profitability",
+            "goodExample": "Chị Lan (Senior Manager) cân bằng giữa chất lượng delivery và profitability, dự án vừa tốt vừa có lời.",
+            "badExample": "Anh Tùng (Senior Manager) cắt giảm effort quá mức để tăng margin, chất lượng giảm sút."
+          },
+          "mgr": {
+            "criteria": "Kiểm soát chi phí và tiến độ dự án hiệu quả\n\nEffectively controls project costs and timeline",
+            "goodExample": "Anh Đức (Manager) kiểm soát project cost chặt chẽ, dự án deliver đúng budget.",
+            "badExample": "Chị Hoa (Manager) để project overrun 50% budget mà không biết cho đến khi kết thúc."
+          },
+          "dep-mgr": {
+            "criteria": "Phân công công việc với cân nhắc phát triển nhân viên\n\nAllocates jobs with consideration to staff development",
+            "goodExample": "Bạn Linh (Deputy) phân công task có cân nhắc để junior được học hỏi từ senior.",
+            "badExample": "Bạn Nam (Deputy) giao task không đều, người thì overload, người thì rảnh."
+          },
+          "principal": {
+            "criteria": "Lập kế hoạch kỹ thuật chi tiết và ước lượng effort chính xác\n\nCreates detailed technical plans and accurate effort estimates",
+            "goodExample": "Anh Khoa (Principal) ước lượng effort chính xác trong 10% tolerance cho phần technical.",
+            "badExample": "Chị Thảo (Principal) estimate sai 100%, dẫn đến dự án thiếu resource nghiêm trọng."
+          },
+          "senior": {
+            "criteria": "Luôn chuẩn bị tốt bằng cách lập kế hoạch và đặt ưu tiên\n\nEnsures always well prepared by planning and setting priorities",
+            "goodExample": "Bạn Hải (Senior) luôn chuẩn bị kỹ trước meeting, có agenda và materials sẵn sàng.",
+            "badExample": "Bạn Mai (Senior) đến meeting không chuẩn bị, lãng phí thời gian mọi người."
+          },
+          "consultant": {
+            "criteria": "Lắng nghe yêu cầu và phản hồi nhanh chóng, chính xác\n\nListens to requests and responds promptly and accurately",
+            "goodExample": "Bạn Tuấn (Consultant) lắng nghe yêu cầu và phản hồi nhanh trong cùng ngày.",
+            "badExample": "Bạn Ngọc (Consultant) để email 3 ngày không reply, khách hàng phàn nàn."
+          }
+        }
+      },
+      {
+        "id": "thuc-thi",
+        "index": "3.2",
+        "nameVn": "Thực thi",
+        "nameEn": "Execution",
+        "levels": {
+          "director": {
+            "criteria": "Tạo giá trị gia tăng chiến lược cho công việc của toàn tổ chức\n\nAdds strategic value to the work of the entire organization",
+            "goodExample": "Giám đốc Minh tạo giá trị chiến lược: xây dựng Practice D365 từ 0 đến 50 người trong 3 năm.",
+            "badExample": "Giám đốc Hùng không có strategic impact, chỉ quản lý công việc hàng ngày."
+          },
+          "snr-mgr": {
+            "criteria": "Đảm bảo tiêu chuẩn chất lượng bằng cách đặt hướng dẫn rõ ràng\n\nEnsures quality standards by setting clear guidelines for staff",
+            "goodExample": "Chị Lan (Senior Manager) đặt ra guideline QA rõ ràng, tất cả deliverables đạt chuẩn trước khi gửi KH.",
+            "badExample": "Anh Tùng (Senior Manager) không có QA standard, mỗi người làm một kiểu."
+          },
+          "mgr": {
+            "criteria": "Tổ chức và ưu tiên công việc để đáp ứng deadline và kỳ vọng\n\nOrganizes and prioritizes work to meet deadlines and expectations",
+            "goodExample": "Anh Đức (Manager) tổ chức và ưu tiên công việc hiệu quả, team luôn deliver đúng deadline.",
+            "badExample": "Chị Hoa (Manager) không clear priority, team không biết làm gì trước."
+          },
+          "dep-mgr": {
+            "criteria": "Đánh giá khối lượng công việc và thảo luận ưu tiên với cấp trên\n\nAssesses workload and discusses priorities with superiors",
+            "goodExample": "Bạn Linh (Deputy) chủ động thảo luận với Manager khi thấy workload quá tải.",
+            "badExample": "Bạn Nam (Deputy) im lặng nhận hết việc rồi không deliver được, gây delay."
+          },
+          "principal": {
+            "criteria": "Tự quản lý khối lượng công việc phức tạp mà không cần giám sát chặt\n\nSelf-manages complex workload without close supervision",
+            "goodExample": "Anh Khoa (Principal) tự quản lý workload phức tạp của 3 dự án mà không cần giám sát.",
+            "badExample": "Chị Thảo (Principal) cần Manager check-in hàng ngày, không tự quản lý được."
+          },
+          "senior": {
+            "criteria": "Cung cấp tư vấn chuyên nghiệp trong phạm vi kinh nghiệm\n\nDelivers professional advice within scope of experience",
+            "goodExample": "Bạn Hải (Senior) cung cấp tư vấn chuyên nghiệp trong phạm vi kinh nghiệm F&O Finance.",
+            "badExample": "Bạn Mai (Senior) tư vấn ngoài phạm vi expertise, đưa ra advice sai."
+          },
+          "consultant": {
+            "criteria": "Luôn chuẩn bị tốt và theo đúng lịch trình công việc\n\nEnsures always well prepared and remains on schedule",
+            "goodExample": "Bạn Tuấn (Consultant) luôn chuẩn bị tốt và hoàn thành task đúng schedule.",
+            "badExample": "Bạn Ngọc (Consultant) thường xuyên trễ schedule vì không quản lý thời gian."
+          }
+        }
+      },
+      {
+        "id": "hoan-thanh-du-an",
+        "index": "3.3",
+        "nameVn": "Hoàn thành dự án",
+        "nameEn": "Engagement Completion",
+        "levels": {
+          "director": {
+            "criteria": "Đảm bảo hoàn thành dự án đúng scope, chất lượng và đạt mục tiêu kinh doanh\n\nEnsures project completion on scope, quality and business objectives",
+            "goodExample": "Giám đốc Minh đảm bảo dự án go-live đúng scope, đạt business objectives của khách hàng.",
+            "badExample": "Giám đốc Hùng để dự án scope creep nghiêm trọng, go-live không đạt mục tiêu ban đầu."
+          },
+          "snr-mgr": {
+            "criteria": "Review và đảm bảo chất lượng toàn bộ deliverables trước khi bàn giao\n\nReviews and ensures quality of all deliverables before handover",
+            "goodExample": "Chị Lan (Senior Manager) review tất cả deliverables trước khi gửi khách, đảm bảo zero defect.",
+            "badExample": "Anh Tùng (Senior Manager) không QA, deliverables bị reject nhiều lần."
+          },
+          "mgr": {
+            "criteria": "Quản lý deliverables theo phase và đảm bảo sign-off từ khách hàng\n\nManages deliverables by phase and ensures customer sign-off",
+            "goodExample": "Anh Đức (Manager) quản lý deliverables theo phase rõ ràng, khách sign-off đúng timeline.",
+            "badExample": "Chị Hoa (Manager) để deliverables pending sign-off hàng tháng vì không follow up."
+          },
+          "dep-mgr": {
+            "criteria": "Quản lý deliverables được giao đúng tiến độ và chất lượng\n\nManages assigned deliverables on time and with quality",
+            "goodExample": "Bạn Linh (Deputy) quản lý BRD được giao, submit đúng deadline và pass review lần 1.",
+            "badExample": "Bạn Nam (Deputy) submit deliverable muộn và bị reject vì thiếu detail."
+          },
+          "principal": {
+            "criteria": "Đảm bảo chất lượng kỹ thuật của deliverables trước khi bàn giao\n\nEnsures technical quality of deliverables before handover",
+            "goodExample": "Anh Khoa (Principal) đảm bảo code quality, pass code review và không có bug nghiêm trọng.",
+            "badExample": "Chị Thảo (Principal) deliver code có nhiều bugs, UAT fail nhiều test cases."
+          },
+          "senior": {
+            "criteria": "Hoàn thành deliverables được giao đúng template và tiêu chuẩn\n\nCompletes assigned deliverables per templates and standards",
+            "goodExample": "Bạn Hải (Senior) hoàn thành Config Workbook theo đúng template standard.",
+            "badExample": "Bạn Mai (Senior) tự tạo format riêng, không theo template công ty."
+          },
+          "consultant": {
+            "criteria": "Tuân thủ quy trình và templates chuẩn của công ty\n\nFollows company standard processes and templates",
+            "goodExample": "Bạn Tuấn (Consultant) tuân thủ quy trình và template, deliverable nhất quán.",
+            "badExample": "Bạn Ngọc (Consultant) không dùng template, deliverable format lộn xộn."
+          }
+        }
+      },
+      {
+        "id": "lam-viec-nhom",
+        "index": "3.4",
+        "nameVn": "Làm việc nhóm",
+        "nameEn": "Teamwork",
+        "levels": {
+          "director": {
+            "criteria": "Thể hiện khả năng lãnh đạo chiến lược trong phục vụ khách hàng\n\nDisplays strategic leadership in servicing customers",
+            "goodExample": "Giám đốc Minh lãnh đạo chiến lược: align các department để serve cùng 1 khách hàng lớn.",
+            "badExample": "Giám đốc Hùng để các team làm việc silos, không có coordination."
+          },
+          "snr-mgr": {
+            "criteria": "Thúc đẩy văn hóa làm việc nhóm và hợp tác liên phòng ban\n\nFosters teamwork culture and cross-departmental collaboration",
+            "goodExample": "Chị Lan (Senior Manager) thúc đẩy collaboration giữa Func team và Tech team, dự án chạy mượt.",
+            "badExample": "Anh Tùng (Senior Manager) không giải quyết conflict giữa 2 teams, ảnh hưởng delivery."
+          },
+          "mgr": {
+            "criteria": "Phân bổ nhân sự hiệu quả bằng cách nhận biết điểm mạnh và yếu\n\nAllocates staff effectively by recognizing strengths and weaknesses",
+            "goodExample": "Anh Đức (Manager) nhận biết strengths của từng người và assign task phù hợp.",
+            "badExample": "Chị Hoa (Manager) assign task random, không phù hợp với skillset của từng người."
+          },
+          "dep-mgr": {
+            "criteria": "Quản lý nhóm hiệu quả để khuyến khích tinh thần đồng đội\n\nEffectively manages team to encourage team spirit",
+            "goodExample": "Bạn Linh (Deputy) quản lý team 5 người hiệu quả, tạo không khí làm việc tích cực.",
+            "badExample": "Bạn Nam (Deputy) gây friction trong team, mọi người ngại làm việc cùng."
+          },
+          "principal": {
+            "criteria": "Dẫn dắt nhóm bằng chuyên môn kỹ thuật thay vì quyền hạn quản lý\n\nLeads team through technical expertise rather than authority",
+            "goodExample": "Anh Khoa (Principal) lead team bằng technical expertise, mọi người tôn trọng và học hỏi.",
+            "badExample": "Chị Thảo (Principal) cố gắng lead bằng authority nhưng team không phục."
+          },
+          "senior": {
+            "criteria": "Khuyến khích nhân viên cấp dưới làm việc cùng nhau\n\nEncourages junior staff to work together",
+            "goodExample": "Bạn Hải (Senior) khuyến khích junior hợp tác và học hỏi lẫn nhau.",
+            "badExample": "Bạn Mai (Senior) làm việc một mình, không muốn pair với junior."
+          },
+          "consultant": {
+            "criteria": "Hợp tác tích cực với các thành viên nhóm để tạo giá trị\n\nActively cooperates with team members to add value",
+            "goodExample": "Bạn Tuấn (Consultant) hợp tác tích cực, chủ động hỏi và hỗ trợ teammates.",
+            "badExample": "Bạn Ngọc (Consultant) làm việc isolated, không communicate với team."
+          }
+        }
+      },
+      {
+        "id": "quan-ly-rui-ro",
+        "index": "3.5",
+        "nameVn": "Quản lý rủi ro",
+        "nameEn": "Risk Management",
+        "levels": {
+          "director": {
+            "criteria": "Xác định, hiểu và hành động để giảm thiểu rủi ro kinh doanh cho công ty\n\nIdentifies, understands and acts to minimize business risk",
+            "goodExample": "Giám đốc Minh nhận diện rủi ro từ early warning signs và ra quyết định cắt lỗ kịp thời.",
+            "badExample": "Giám đốc Hùng bỏ qua các dấu hiệu cảnh báo, để dự án thất bại gây thiệt hại lớn."
+          },
+          "snr-mgr": {
+            "criteria": "Quản lý kỳ vọng khách hàng về thay đổi quy định và công nghệ\n\nManages customer expectations regarding regulatory and technology changes",
+            "goodExample": "Chị Lan (Senior Manager) quản lý kỳ vọng khách về D365 roadmap changes rất tốt.",
+            "badExample": "Anh Tùng (Senior Manager) để khách bất ngờ khi tính năng bị deprecate."
+          },
+          "mgr": {
+            "criteria": "Chịu trách nhiệm quản lý rủi ro dự án và đưa ra giải pháp\n\nTakes responsibility for project risk management and provides solutions",
+            "goodExample": "Anh Đức (Manager) lập risk register và review hàng tuần, có mitigation plan cho mỗi risk.",
+            "badExample": "Chị Hoa (Manager) không có risk management, để vấn đề xảy ra mới xử lý."
+          },
+          "dep-mgr": {
+            "criteria": "Xác định điểm yếu trong quy trình khách hàng và báo cáo quản lý\n\nIdentifies process weaknesses within customers and alerts manager",
+            "goodExample": "Bạn Linh (Deputy) phát hiện quy trình khách có gap và báo cáo Manager kịp thời.",
+            "badExample": "Bạn Nam (Deputy) biết có vấn đề nhưng không report vì nghĩ không phải việc của mình."
+          },
+          "principal": {
+            "criteria": "Đánh giá tính khả thi của giải pháp và cảnh báo rủi ro kỹ thuật sớm\n\nAssesses solution feasibility and warns of technical risks early",
+            "goodExample": "Anh Khoa (Principal) đánh giá feasibility và cảnh báo risk kỹ thuật từ giai đoạn design.",
+            "badExample": "Chị Thảo (Principal) không assess risk, để issues phát sinh ở UAT mới biết."
+          },
+          "senior": {
+            "criteria": "Biết khi nào cần báo cáo cấp trên về vấn đề vượt quá khả năng\n\nJudges when to refer to superiors for issues beyond capability",
+            "goodExample": "Bạn Hải (Senior) biết khi nào cần escalate vấn đề vượt quá khả năng xử lý.",
+            "badExample": "Bạn Mai (Senior) cố tự giải quyết issue lớn, làm mọi thứ tệ hơn."
+          },
+          "consultant": {
+            "criteria": "Phản hồi nhanh các yêu cầu bằng cách chuyển đến người phù hợp\n\nResponds quickly to enquiries by directing to appropriate person",
+            "goodExample": "Bạn Tuấn (Consultant) chuyển enquiry đến đúng người khi không có đủ kiến thức.",
+            "badExample": "Bạn Ngọc (Consultant) cố trả lời dù không biết, đưa thông tin sai."
+          }
+        }
+      },
+      {
+        "id": "hieu-qua-kinh-te-du-an",
+        "index": "3.6",
+        "nameVn": "Hiệu quả kinh tế dự án",
+        "nameEn": "Engagement Economics",
+        "levels": {
+          "director": {
+            "criteria": "Ra quyết định về đầu tư, chi phí và lợi nhuận tối ưu cho tổ chức\n\nMakes decisions on investment, costs and optimal profitability for organization",
+            "goodExample": "Giám đốc Minh quyết định đầu tư thêm resource cho dự án chiến lược dù margin thấp hơn.",
+            "badExample": "Giám đốc Hùng chỉ focus profit ngắn hạn, bỏ qua cơ hội strategic partnerships."
+          },
+          "snr-mgr": {
+            "criteria": "Theo dõi và tối ưu hóa margin dự án; báo giá phù hợp với giá trị\n\nMonitors and optimizes project margin; quotes appropriately to value",
+            "goodExample": "Chị Lan (Senior Manager) tối ưu project margin từ 15% lên 25% qua resource planning tốt.",
+            "badExample": "Anh Tùng (Senior Manager) để dự án lỗ 10% vì estimate sai và không track cost."
+          },
+          "mgr": {
+            "criteria": "Chủ động tìm kiếm và duy trì lợi nhuận cho các dự án\n\nProactively seeks to maintain profitability for projects",
+            "goodExample": "Anh Đức (Manager) chủ động đề xuất CR khi scope expand để đảm bảo profitability.",
+            "badExample": "Chị Hoa (Manager) làm thêm việc miễn phí cho khách, ảnh hưởng margin."
+          },
+          "dep-mgr": {
+            "criteria": "Theo dõi effort vs budget và báo cáo chênh lệch kịp thời\n\nTracks effort vs budget and reports variances timely",
+            "goodExample": "Bạn Linh (Deputy) track effort vs budget hàng tuần và báo cáo variance kịp thời.",
+            "badExample": "Bạn Nam (Deputy) không biết mình đã dùng bao nhiêu % budget cho đến khi hết."
+          },
+          "principal": {
+            "criteria": "Ước lượng effort chính xác cho phần công việc kỹ thuật\n\nEstimates effort accurately for technical work portions",
+            "goodExample": "Anh Khoa (Principal) estimate effort chính xác cho phần kỹ thuật, giúp pricing đúng.",
+            "badExample": "Chị Thảo (Principal) estimate thiếu, khiến dự án overrun 50% effort."
+          },
+          "senior": {
+            "criteria": "Báo cáo timesheet chính xác và đúng hạn\n\nReports timesheet accurately and on time",
+            "goodExample": "Bạn Hải (Senior) report timesheet đúng hạn và chính xác từng task.",
+            "badExample": "Bạn Mai (Senior) report timesheet muộn và chia effort không đúng thực tế."
+          },
+          "consultant": {
+            "criteria": "Hiểu tầm quan trọng của việc theo dõi thời gian và chi phí\n\nUnderstands importance of tracking time and costs",
+            "goodExample": "Bạn Tuấn (Consultant) hiểu tầm quan trọng của việc track time và report đúng.",
+            "badExample": "Bạn Ngọc (Consultant) nghĩ timesheet không quan trọng, report bừa bãi."
+          }
+        }
+      },
+      {
+        "id": "giao-tiep",
+        "index": "3.7",
+        "nameVn": "Giao tiếp",
+        "nameEn": "Communication",
+        "levels": {
+          "director": {
+            "criteria": "Giao tiếp chiến lược: truyền đạt điều cần thiết, đúng cách, đúng ngôn ngữ\n\nStrategic communication: conveys what others need, the right way, in their language",
+            "goodExample": "Giám đốc Minh truyền đạt chiến lược phức tạp thành thông điệp đơn giản cho toàn công ty.",
+            "badExample": "Giám đốc Hùng nói chuyện academic, nhân viên không hiểu company direction."
+          },
+          "snr-mgr": {
+            "criteria": "Giao tiếp khéo léo và ngoại giao khi thảo luận vấn đề nhạy cảm\n\nCommunicates with tact and diplomacy on sensitive issues",
+            "goodExample": "Chị Lan (Senior Manager) xử lý tình huống nhạy cảm với khách hàng rất khéo léo.",
+            "badExample": "Anh Tùng (Senior Manager) nói thẳng quá gây xung đột với stakeholders."
+          },
+          "mgr": {
+            "criteria": "Có khả năng thuyết phục, trấn an và đàm phán khi phù hợp\n\nIs able to convince, reassure, persuade and negotiate as appropriate",
+            "goodExample": "Anh Đức (Manager) thuyết phục khách hàng chấp nhận CR với giải thích hợp lý.",
+            "badExample": "Chị Hoa (Manager) không thuyết phục được, khách reject CR cần thiết."
+          },
+          "dep-mgr": {
+            "criteria": "Giao tiếp rõ ràng, ngắn gọn và hiệu quả trong mọi tình huống\n\nCommunicates clearly, concisely and effectively in all situations",
+            "goodExample": "Bạn Linh (Deputy) giao tiếp rõ ràng, ngắn gọn trong email và meeting.",
+            "badExample": "Bạn Nam (Deputy) email dài dòng, không clear action items."
+          },
+          "principal": {
+            "criteria": "Truyền đạt các khái niệm kỹ thuật phức tạp bằng ngôn ngữ dễ hiểu\n\nTranslates complex technical concepts into easy-to-understand language",
+            "goodExample": "Anh Khoa (Principal) giải thích concept kỹ thuật phức tạp bằng ngôn ngữ business đơn giản.",
+            "badExample": "Chị Thảo (Principal) nói toàn technical terms, khách hàng không hiểu."
+          },
+          "senior": {
+            "criteria": "Giao tiếp rõ ràng và hiệu quả với mọi cấp trong tổ chức\n\nCommunicates clearly and effectively to all levels",
+            "goodExample": "Bạn Hải (Senior) giao tiếp hiệu quả với mọi cấp từ end-user đến manager khách hàng.",
+            "badExample": "Bạn Mai (Senior) chỉ làm việc được với technical people, giao tiếp với user yếu."
+          },
+          "consultant": {
+            "criteria": "Giao tiếp rõ ràng, hiệu quả và lắng nghe tích cực\n\nCommunicates clearly, effectively and actively listens",
+            "goodExample": "Bạn Tuấn (Consultant) lắng nghe tích cực và ask clarifying questions khi cần.",
+            "badExample": "Bạn Ngọc (Consultant) không lắng nghe, hay ngắt lời người khác."
+          }
+        }
+      },
+      {
+        "id": "quan-ly-kien-thuc",
+        "index": "3.8",
+        "nameVn": "Quản lý kiến thức",
+        "nameEn": "Knowledge Management",
+        "levels": {
+          "director": {
+            "criteria": "Xây dựng văn hóa chia sẻ và quản lý kiến thức trong toàn tổ chức\n\nBuilds knowledge sharing and management culture across organization",
+            "goodExample": "Giám đốc Minh xây dựng knowledge base và văn hóa chia sẻ trong toàn practice.",
+            "badExample": "Giám đốc Hùng không đầu tư vào knowledge management, mỗi người giữ riêng."
+          },
+          "snr-mgr": {
+            "criteria": "Áp dụng lessons learned từ các dự án để cải thiện quy trình chung\n\nApplies lessons learned from projects to improve general processes",
+            "goodExample": "Chị Lan (Senior Manager) áp dụng lessons learned vào template và process chung.",
+            "badExample": "Anh Tùng (Senior Manager) không document lessons learned, lặp lại sai lầm."
+          },
+          "mgr": {
+            "criteria": "Tổ chức retrospective/lessons learned sau mỗi dự án\n\nOrganizes retrospective/lessons learned after each project",
+            "goodExample": "Anh Đức (Manager) tổ chức retrospective sau mỗi dự án và share findings với team.",
+            "badExample": "Chị Hoa (Manager) không có retrospective, team không học từ mistakes."
+          },
+          "dep-mgr": {
+            "criteria": "Áp dụng feedback từ dự án trước vào dự án hiện tại\n\nApplies feedback from previous projects to current ones",
+            "goodExample": "Bạn Linh (Deputy) áp dụng feedback từ dự án trước, không lặp lại lỗi cũ.",
+            "badExample": "Bạn Nam (Deputy) mắc cùng lỗi ở nhiều dự án vì không review experience."
+          },
+          "principal": {
+            "criteria": "Đóng góp vào knowledge base và thư viện giải pháp nội bộ\n\nContributes to internal knowledge base and solution library",
+            "goodExample": "Anh Khoa (Principal) đóng góp technical solutions vào internal wiki thường xuyên.",
+            "badExample": "Chị Thảo (Principal) giữ knowledge cho riêng mình, không share."
+          },
+          "senior": {
+            "criteria": "Tham gia learning sessions và chia sẻ kiến thức mới\n\nParticipates in learning sessions and shares new knowledge",
+            "goodExample": "Bạn Hải (Senior) tham gia learning sessions và share kiến thức mới với team.",
+            "badExample": "Bạn Mai (Senior) không tham gia training nội bộ vì 'đã biết rồi'."
+          },
+          "consultant": {
+            "criteria": "Chủ động học hỏi công cụ và kỹ thuật mới\n\nProactively learns new tools and techniques",
+            "goodExample": "Bạn Tuấn (Consultant) chủ động học tools và kỹ thuật mới từ senior.",
+            "badExample": "Bạn Ngọc (Consultant) không chịu học cái mới, chỉ làm theo cách đã biết."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "group-4",
+    "index": "4",
+    "nameVn": "CHUYÊN MÔN",
+    "nameEn": "EXPERTISE DIMENSION",
+    "icon": "🔧",
+    "competencies": [
+      {
+        "id": "tiep-thu-kien-thuc",
+        "index": "4.1",
+        "nameVn": "Tiếp thu kiến thức",
+        "nameEn": "Knowledge Acquisition",
+        "levels": {
+          "director": {
+            "criteria": "Cập nhật về phát triển kỹ thuật và pháp luật mới nhất\n\nKeeps up-to-date with latest technical and legislative developments",
+            "goodExample": "Giám đốc Minh đọc Microsoft Ignite announcements và định hướng practice theo trends mới.",
+            "badExample": "Giám đốc Hùng không cập nhật, practice bị tụt hậu so với đối thủ."
+          },
+          "snr-mgr": {
+            "criteria": "Sử dụng nguồn bên ngoài để phát triển kiến thức\n\nUses external sources to develop knowledge",
+            "goodExample": "Chị Lan (Senior Manager) tham gia Microsoft Partner events và mang về kiến thức mới.",
+            "badExample": "Anh Tùng (Senior Manager) không networking, không biết industry developments."
+          },
+          "mgr": {
+            "criteria": "Học từ kinh nghiệm quá khứ và áp dụng vào tình huống mới\n\nLearns from past experiences and applies to new situations",
+            "goodExample": "Anh Đức (Manager) áp dụng lessons learned từ failed project vào dự án mới.",
+            "badExample": "Chị Hoa (Manager) không review past projects, lặp lại mistakes."
+          },
+          "dep-mgr": {
+            "criteria": "Áp dụng kiến thức từ kinh nghiệm bản thân và đồng nghiệp\n\nApplies knowledge from own and colleagues' experience",
+            "goodExample": "Bạn Linh (Deputy) học hỏi từ cách senior handle difficult customer và áp dụng.",
+            "badExample": "Bạn Nam (Deputy) không quan sát, không học từ kinh nghiệm người khác."
+          },
+          "principal": {
+            "criteria": "Nghiên cứu công nghệ mới, tính năng mới D365\n\nResearches new technologies and D365 features",
+            "goodExample": "Anh Khoa (Principal) thử nghiệm Copilot features mới và tạo demo cho team.",
+            "badExample": "Chị Thảo (Principal) không thử tính năng mới, chỉ dùng những gì đã biết."
+          },
+          "senior": {
+            "criteria": "Chủ động tìm kiếm cơ hội đào tạo\n\nActively seeks training opportunities",
+            "goodExample": "Bạn Hải (Senior) chủ động đăng ký Microsoft Learn courses và lấy badges.",
+            "badExample": "Bạn Mai (Senior) không có motivation để self-learn, chờ được send đi training."
+          },
+          "consultant": {
+            "criteria": "Áp dụng kiến thức từ training vào công việc\n\nApplies knowledge from training to work",
+            "goodExample": "Bạn Tuấn (Consultant) áp dụng ngay kiến thức từ onboarding training vào task.",
+            "badExample": "Bạn Ngọc (Consultant) không áp dụng được training, cần hướng dẫn lại."
+          }
+        }
+      },
+      {
+        "id": "the-hien-nang-luc",
+        "index": "4.2",
+        "nameVn": "Thể hiện năng lực",
+        "nameEn": "Demonstration",
+        "levels": {
+          "director": {
+            "criteria": "Là chuyên gia được công nhận trong ngành\n\nIs recognized expert in the field",
+            "goodExample": "Giám đốc Minh được mời làm speaker tại Microsoft events như industry expert.",
+            "badExample": "Giám đốc Hùng không được market recognize, không có thought leadership."
+          },
+          "snr-mgr": {
+            "criteria": "Thể hiện chuyên môn qua giải quyết vấn đề phức tạp\n\nDemonstrates expertise through solving complex problems",
+            "goodExample": "Chị Lan (Senior Manager) giải quyết vấn đề integration phức tạp mà vendor không làm được.",
+            "badExample": "Anh Tùng (Senior Manager) không thể hiện được chuyên môn cao, cần support."
+          },
+          "mgr": {
+            "criteria": "Trình bày và demo giải pháp chuyên nghiệp\n\nDelivers professional presentations and demos",
+            "goodExample": "Anh Đức (Manager) trình bày solution demo chuyên nghiệp, khách hàng impressed.",
+            "badExample": "Chị Hoa (Manager) demo lộn xộn, khách hàng không thấy được giá trị."
+          },
+          "dep-mgr": {
+            "criteria": "Thể hiện năng lực qua chất lượng deliverables\n\nDemonstrates competency through deliverable quality",
+            "goodExample": "Bạn Linh (Deputy) deliverables chất lượng cao, được khách khen ngợi.",
+            "badExample": "Bạn Nam (Deputy) deliverables quality thấp, cần rework nhiều lần."
+          },
+          "principal": {
+            "criteria": "Giải quyết vấn đề kỹ thuật phức tạp\n\nSolves complex technical problems",
+            "goodExample": "Anh Khoa (Principal) giải quyết technical issue P1 trong 2 giờ mà không ai khác làm được.",
+            "badExample": "Chị Thảo (Principal) gặp issue phức tạp là không giải quyết được, phải escalate."
+          },
+          "senior": {
+            "criteria": "Thể hiện năng lực qua công việc hàng ngày\n\nDemonstrates competency through daily work",
+            "goodExample": "Bạn Hải (Senior) thể hiện competency qua công việc hàng ngày, được team tin tưởng.",
+            "badExample": "Bạn Mai (Senior) công việc không cho thấy improvement, đi ngang về kiến thức."
+          },
+          "consultant": {
+            "criteria": "Học hỏi và thể hiện tiến bộ qua từng dự án\n\nLearns and shows progress through projects",
+            "goodExample": "Bạn Tuấn (Consultant) cho thấy progress rõ rệt qua mỗi dự án, từ 60% lên 80% quality.",
+            "badExample": "Bạn Ngọc (Consultant) không có tiến bộ sau 6 tháng, vẫn mắc lỗi cơ bản."
+          }
+        }
+      },
+      {
+        "id": "quan-ly-kien-thuc",
+        "index": "4.3",
+        "nameVn": "Quản lý kiến thức",
+        "nameEn": "Knowledge Management",
+        "levels": {
+          "director": {
+            "criteria": "Xây dựng văn hóa chia sẻ kiến thức trong tổ chức\n\nBuilds knowledge sharing culture across organization",
+            "goodExample": "Giám đốc Minh xây dựng knowledge culture: tất cả phải contribute vào wiki.",
+            "badExample": "Giám đốc Hùng không enforce knowledge sharing, knowledge bị lost khi người nghỉ."
+          },
+          "snr-mgr": {
+            "criteria": "Thiết lập hệ thống lưu trữ và chia sẻ kiến thức\n\nEstablishes knowledge storage and sharing systems",
+            "goodExample": "Chị Lan (Senior Manager) thiết lập SharePoint structure để lưu trữ project artifacts.",
+            "badExample": "Anh Tùng (Senior Manager) không có system, documents nằm rải rác."
+          },
+          "mgr": {
+            "criteria": "Tổ chức retrospective/lessons learned\n\nOrganizes retrospectives/lessons learned",
+            "goodExample": "Anh Đức (Manager) tổ chức retrospective và document lessons learned.",
+            "badExample": "Chị Hoa (Manager) không có retrospective, same issues keep happening."
+          },
+          "dep-mgr": {
+            "criteria": "Đóng góp tài liệu vào knowledge base nội bộ\n\nContributes documents to internal knowledge base",
+            "goodExample": "Bạn Linh (Deputy) đóng góp FAQ và troubleshooting guides vào knowledge base.",
+            "badExample": "Bạn Nam (Deputy) giữ knowledge riêng, không share với team."
+          },
+          "principal": {
+            "criteria": "Xây dựng thư viện giải pháp kỹ thuật\n\nBuilds technical solution library",
+            "goodExample": "Anh Khoa (Principal) xây dựng library các technical solutions có thể reuse.",
+            "badExample": "Chị Thảo (Principal) build from scratch mỗi lần, không leverage past work."
+          },
+          "senior": {
+            "criteria": "Tham gia learning sessions và chia sẻ kiến thức\n\nParticipates in learning sessions and shares knowledge",
+            "goodExample": "Bạn Hải (Senior) tham gia brown bag sessions và share experiences.",
+            "badExample": "Bạn Mai (Senior) không tham gia knowledge sharing activities."
+          },
+          "consultant": {
+            "criteria": "Ghi chép và lưu trữ kiến thức học được\n\nDocuments and stores learned knowledge",
+            "goodExample": "Bạn Tuấn (Consultant) ghi chép và lưu lại những gì học được từ senior.",
+            "badExample": "Bạn Ngọc (Consultant) không ghi chép, hỏi lại cùng câu hỏi nhiều lần."
+          }
+        }
+      },
+      {
+        "id": "at-uoc-su-cong-nhan",
+        "index": "4.4",
+        "nameVn": "Đạt được sự công nhận",
+        "nameEn": "Recognition",
+        "levels": {
+          "director": {
+            "criteria": "Được công nhận là thought leader trong ngành\n\nIs recognized as thought leader in industry",
+            "goodExample": "Giám đốc Minh được Microsoft mời làm Partner Advisory Council member.",
+            "badExample": "Giám đốc Hùng không có recognition từ Microsoft hay industry."
+          },
+          "snr-mgr": {
+            "criteria": "Đạt chứng chỉ cao cấp; được KH công nhận\n\nAchieves advanced certifications; recognized by customers",
+            "goodExample": "Chị Lan (Senior Manager) đạt MB-700 Solution Architect cert; khách hàng request đích danh.",
+            "badExample": "Anh Tùng (Senior Manager) không có cert cao cấp, khách không biết expertise."
+          },
+          "mgr": {
+            "criteria": "Đạt chứng chỉ theo roadmap; là module expert\n\nAchieves certifications per roadmap; is module expert",
+            "goodExample": "Anh Đức (Manager) đạt cert theo roadmap và được recognize là module expert.",
+            "badExample": "Chị Hoa (Manager) không complete cert plan, thiếu credibility với khách."
+          },
+          "dep-mgr": {
+            "criteria": "Đạt chứng chỉ cơ bản; được công nhận trong phạm vi\n\nAchieves basic certifications; recognized in scope",
+            "goodExample": "Bạn Linh (Deputy) đạt 2 certs và được assign lead smaller modules.",
+            "badExample": "Bạn Nam (Deputy) fail cert 2 lần, không advance được trong career."
+          },
+          "principal": {
+            "criteria": "Đạt chứng chỉ kỹ thuật; được công nhận về coding\n\nAchieves technical certifications; recognized for coding",
+            "goodExample": "Anh Khoa (Principal) đạt MB-500 Expert cert và được recognize về coding excellence.",
+            "badExample": "Chị Thảo (Principal) không có technical certs, coding quality questionable."
+          },
+          "senior": {
+            "criteria": "Hoàn thành training; bắt đầu xây dựng reputation\n\nCompletes training; begins building reputation",
+            "goodExample": "Bạn Hải (Senior) complete training và bắt đầu được customers biết đến.",
+            "badExample": "Bạn Mai (Senior) sau 2 năm vẫn chưa có reputation trong team."
+          },
+          "consultant": {
+            "criteria": "Hoàn thành onboarding và tích lũy kinh nghiệm\n\nCompletes onboarding and accumulates experience",
+            "goodExample": "Bạn Tuấn (Consultant) hoàn thành onboarding xuất sắc và tích lũy experience tốt.",
+            "badExample": "Bạn Ngọc (Consultant) sau 6 tháng vẫn cần guide như ngày đầu."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "group-5",
+    "index": "5",
+    "nameVn": "PHÁT TRIỂN CON NGƯỜI",
+    "nameEn": "PEOPLE DEVELOPMENT DIMENSION",
+    "icon": "👥",
+    "competencies": [
+      {
+        "id": "tu-phat-trien",
+        "index": "5.1",
+        "nameVn": "Tự phát triển",
+        "nameEn": "Self-development",
+        "levels": {
+          "director": {
+            "criteria": "Là hình mẫu về học hỏi liên tục\n\nActs as role model for continuous learning",
+            "goodExample": "Giám đốc Minh tự học AI/ML để có thể định hướng practice, dù bận rộn vẫn dành 2h/tuần.",
+            "badExample": "Giám đốc Hùng dừng học hỏi sau khi lên Director, knowledge bị outdated."
+          },
+          "snr-mgr": {
+            "criteria": "Chủ động tìm kiếm cơ hội học hỏi; mentor người khác\n\nProactively seeks learning; mentors others",
+            "goodExample": "Chị Lan (Senior Manager) mentor junior managers và tự học leadership từ books.",
+            "badExample": "Anh Tùng (Senior Manager) không invest vào self-development, stagnant."
+          },
+          "mgr": {
+            "criteria": "Hiểu điểm mạnh/yếu và làm việc để cải thiện\n\nUnderstands strengths/weaknesses and works to improve",
+            "goodExample": "Anh Đức (Manager) nhận feedback từ team và làm việc để cải thiện weaknesses.",
+            "badExample": "Chị Hoa (Manager) defensive khi nhận feedback, không accept criticism."
+          },
+          "dep-mgr": {
+            "criteria": "Chủ động cải thiện kỹ năng qua phản hồi\n\nActively improves skills through feedback",
+            "goodExample": "Bạn Linh (Deputy) chủ động xin feedback và improve dựa trên recommendations.",
+            "badExample": "Bạn Nam (Deputy) không muốn nghe feedback, cho là mình đã làm tốt."
+          },
+          "principal": {
+            "criteria": "Theo đuổi excellence kỹ thuật; tự nghiên cứu\n\nPursues technical excellence; self-researches",
+            "goodExample": "Anh Khoa (Principal) theo đuổi technical excellence, tự research advanced patterns.",
+            "badExample": "Chị Thảo (Principal) comfortable với current skills, không push boundaries."
+          },
+          "senior": {
+            "criteria": "Chủ động tìm kiếm cơ hội đào tạo\n\nActively seeks training opportunities",
+            "goodExample": "Bạn Hải (Senior) chủ động đăng ký training và practice certifications.",
+            "badExample": "Bạn Mai (Senior) không có development plan, chờ Manager assign."
+          },
+          "consultant": {
+            "criteria": "Tìm kiếm cơ hội phát triển qua công việc\n\nSeeks development through daily work",
+            "goodExample": "Bạn Tuấn (Consultant) tìm kiếm cơ hội học từ daily work và ask questions.",
+            "badExample": "Bạn Ngọc (Consultant) passive, chỉ làm được assigned không seek growth."
+          }
+        }
+      },
+      {
+        "id": "tuyen-dung",
+        "index": "5.2",
+        "nameVn": "Tuyển dụng",
+        "nameEn": "Recruitment",
+        "levels": {
+          "director": {
+            "criteria": "Phê duyệt chiến lược tuyển dụng; quyết định vị trí cao\n\nApproves recruitment strategy; decides on senior positions",
+            "goodExample": "Giám đốc Minh phê duyệt hiring strategy aligned với business goals.",
+            "badExample": "Giám đốc Hùng approve hiring không có strategy, recruit random profiles."
+          },
+          "snr-mgr": {
+            "criteria": "Tham gia phỏng vấn vòng cuối; đánh giá culture fit\n\nParticipates in final interviews; evaluates culture fit",
+            "goodExample": "Chị Lan (Senior Manager) interview final round và đánh giá culture fit chính xác.",
+            "badExample": "Anh Tùng (Senior Manager) hire người có skills nhưng không fit culture, resign sớm."
+          },
+          "mgr": {
+            "criteria": "Phỏng vấn về năng lực chuyên môn; đề xuất tuyển dụng\n\nInterviews for competency; makes hiring recommendations",
+            "goodExample": "Anh Đức (Manager) phỏng vấn chuyên môn và đề xuất hiring decision có căn cứ.",
+            "badExample": "Chị Hoa (Manager) đánh giá ứng viên theo cảm tính, không có criteria rõ ràng."
+          },
+          "dep-mgr": {
+            "criteria": "Hỗ trợ phỏng vấn kỹ thuật cho ứng viên cấp dưới\n\nSupports technical interviews for junior candidates",
+            "goodExample": "Bạn Linh (Deputy) hỗ trợ interview technical cho ứng viên junior một cách fair.",
+            "badExample": "Bạn Nam (Deputy) interview quá harsh, candidates có ấn tượng xấu về công ty."
+          },
+          "principal": {
+            "criteria": "Đánh giá năng lực kỹ thuật qua coding test\n\nEvaluates technical competency through coding tests",
+            "goodExample": "Anh Khoa (Principal) design coding test fair và đánh giá technical skills objectively.",
+            "badExample": "Chị Thảo (Principal) coding test quá khó hoặc không relevant, filter sai người."
+          },
+          "senior": {
+            "criteria": "Hỗ trợ onboarding nhân viên mới\n\nSupports new employee onboarding",
+            "goodExample": "Bạn Hải (Senior) hỗ trợ onboarding buddy cho new hire, giúp họ settle nhanh.",
+            "badExample": "Bạn Mai (Senior) không có thời gian cho new hire, để họ tự loay hoay."
+          },
+          "consultant": {
+            "criteria": "Tham gia giới thiệu công ty cho ứng viên\n\nParticipates in company introduction for candidates",
+            "goodExample": "Bạn Tuấn (Consultant) tham gia giới thiệu company culture cho candidates.",
+            "badExample": "Bạn Ngọc (Consultant) nói xấu công ty trước mặt candidates."
+          }
+        }
+      },
+      {
+        "id": "ua-ra-phan-hoi",
+        "index": "5.3",
+        "nameVn": "Đưa ra phản hồi",
+        "nameEn": "Feedback",
+        "levels": {
+          "director": {
+            "criteria": "Tạo văn hóa phản hồi cởi mở trong tổ chức\n\nCreates culture of open feedback across organization",
+            "goodExample": "Giám đốc Minh tạo văn hóa feedback cởi mở: ai cũng có thể nói thẳng với ai.",
+            "badExample": "Giám đốc Hùng tạo văn hóa sợ hãi, không ai dám give feedback up."
+          },
+          "snr-mgr": {
+            "criteria": "Đưa phê bình kịp thời, xây dựng; khuyến khích phản hồi\n\nDelivers timely constructive criticism; encourages feedback",
+            "goodExample": "Chị Lan (Senior Manager) đưa feedback kịp thời, cụ thể và actionable.",
+            "badExample": "Anh Tùng (Senior Manager) chờ annual review mới nói, quá muộn để sửa."
+          },
+          "mgr": {
+            "criteria": "Đưa phê bình tích cực; lắng nghe phản hồi\n\nGives positive criticism; listens to feedback",
+            "goodExample": "Anh Đức (Manager) đưa criticism tích cực và lắng nghe phản hồi từ team.",
+            "badExample": "Chị Hoa (Manager) chỉ nói những gì sai mà không acknowledge điểm tốt."
+          },
+          "dep-mgr": {
+            "criteria": "Khuyến khích bằng củng cố hiệu suất tốt\n\nEncourages by reinforcing good performance",
+            "goodExample": "Bạn Linh (Deputy) khuyến khích junior bằng cách reinforcing good performance.",
+            "badExample": "Bạn Nam (Deputy) chỉ focus vào negative, team mất motivation."
+          },
+          "principal": {
+            "criteria": "Đưa phản hồi kỹ thuật qua code review\n\nProvides technical feedback through code review",
+            "goodExample": "Anh Khoa (Principal) đưa technical feedback qua code review một cách constructive.",
+            "badExample": "Chị Thảo (Principal) code review comments harsh và demotivating."
+          },
+          "senior": {
+            "criteria": "Hướng dẫn người có hiệu suất thấp\n\nGuides underperformers",
+            "goodExample": "Bạn Hải (Senior) hướng dẫn underperformer cách cải thiện cụ thể.",
+            "badExample": "Bạn Mai (Senior) chỉ than phiền về người khác mà không help."
+          },
+          "consultant": {
+            "criteria": "Cởi mở tiếp nhận phản hồi để cải thiện\n\nIs open to receiving feedback to improve",
+            "goodExample": "Bạn Tuấn (Consultant) cởi mở tiếp nhận feedback và cảm ơn người góp ý.",
+            "badExample": "Bạn Ngọc (Consultant) defensive khi nhận feedback, đổ lỗi cho người khác."
+          }
+        }
+      },
+      {
+        "id": "ao-tao-phat-trien-nv",
+        "index": "5.4",
+        "nameVn": "Đào tạo & Phát triển NV",
+        "nameEn": "Staff Development",
+        "levels": {
+          "director": {
+            "criteria": "Chủ động tạo cơ hội phát triển cho cấp dưới\n\nActively provides development opportunities",
+            "goodExample": "Giám đốc Minh tạo cơ hội cho senior managers gặp clients quan trọng để develop.",
+            "badExample": "Giám đốc Hùng giữ tất cả client meetings cho mình, không develop others."
+          },
+          "snr-mgr": {
+            "criteria": "Liên tục đào tạo tại chỗ; đưa NV đến họp quan trọng\n\nContinually provides on-the-job training",
+            "goodExample": "Chị Lan (Senior Manager) liên tục on-the-job training và đưa staff vào key meetings.",
+            "badExample": "Anh Tùng (Senior Manager) không invest time để train, để staff tự figure out."
+          },
+          "mgr": {
+            "criteria": "Chia sẻ kiến thức và kinh nghiệm với nhân viên\n\nShares knowledge and experience with staff",
+            "goodExample": "Anh Đức (Manager) share kiến thức và kinh nghiệm qua regular 1-1 sessions.",
+            "badExample": "Chị Hoa (Manager) không có 1-1, staff không có cơ hội discuss development."
+          },
+          "dep-mgr": {
+            "criteria": "Huấn luyện NV bằng giải thích và demo\n\nCoaches staff with explanations and demos",
+            "goodExample": "Bạn Linh (Deputy) coach staff bằng giải thích why và demo how.",
+            "badExample": "Bạn Nam (Deputy) chỉ nói 'làm đi' mà không explain, staff không học được."
+          },
+          "principal": {
+            "criteria": "Huấn luyện về coding standards và best practices\n\nCoaches on coding standards and best practices",
+            "goodExample": "Anh Khoa (Principal) coach về coding standards và best practices regularly.",
+            "badExample": "Chị Thảo (Principal) không share knowledge, giữ expertise cho riêng mình."
+          },
+          "senior": {
+            "criteria": "Huấn luyện nhân viên mới về quy trình\n\nCoaches new staff on processes",
+            "goodExample": "Bạn Hải (Senior) coach new hire về processes và help them get up to speed.",
+            "badExample": "Bạn Mai (Senior) không có patience với new hires, complain họ chậm."
+          },
+          "consultant": {
+            "criteria": "Giúp NV cấp dưới hiểu điều quan trọng\n\nHelps junior staff understand what's important",
+            "goodExample": "Bạn Tuấn (Consultant) giúp đỡ đồng nghiệp mới hiểu những điều quan trọng.",
+            "badExample": "Bạn Ngọc (Consultant) không share gì, chỉ focus vào việc của mình."
+          }
+        }
+      },
+      {
+        "id": "quan-ly-nhan-vien",
+        "index": "5.5",
+        "nameVn": "Quản lý nhân viên",
+        "nameEn": "Staff Management",
+        "levels": {
+          "director": {
+            "criteria": "Ra quyết định về nhân sự cấp cao; quản lý performance\n\nMakes decisions on senior personnel; manages performance",
+            "goodExample": "Giám đốc Minh quyết định thăng chức/kỷ luật công bằng dựa trên performance.",
+            "badExample": "Giám đốc Hùng promote dựa trên quan hệ cá nhân, không fair."
+          },
+          "snr-mgr": {
+            "criteria": "Đánh giá performance và lập kế hoạch phát triển\n\nEvaluates performance and creates development plans",
+            "goodExample": "Chị Lan (Senior Manager) đánh giá performance khách quan và tạo development plan.",
+            "badExample": "Anh Tùng (Senior Manager) đánh giá chủ quan, staff không biết cách improve."
+          },
+          "mgr": {
+            "criteria": "Phân bổ nhân sự hiệu quả theo điểm mạnh/yếu\n\nAllocates staff effectively by strengths/weaknesses",
+            "goodExample": "Anh Đức (Manager) phân bổ staff theo strengths, maximize team performance.",
+            "badExample": "Chị Hoa (Manager) assign task random, không match skills với work."
+          },
+          "dep-mgr": {
+            "criteria": "Quản lý nhóm nhỏ; theo dõi performance\n\nManages small team; tracks performance",
+            "goodExample": "Bạn Linh (Deputy) quản lý team nhỏ hiệu quả, track progress và support.",
+            "badExample": "Bạn Nam (Deputy) không track team, không biết ai đang làm gì."
+          },
+          "principal": {
+            "criteria": "Dẫn dắt nhóm bằng chuyên môn kỹ thuật\n\nLeads team through technical expertise",
+            "goodExample": "Anh Khoa (Principal) lead technical team bằng expertise, được team respect.",
+            "badExample": "Chị Thảo (Principal) cố micromanage nhưng không có technical credibility."
+          },
+          "senior": {
+            "criteria": "Quản lý task và hỗ trợ quản lý nhóm dự án\n\nManages tasks and supports project team management",
+            "goodExample": "Bạn Hải (Senior) quản lý tasks của mình và support team management.",
+            "badExample": "Bạn Mai (Senior) không track own tasks, thường xuyên miss deadline."
+          },
+          "consultant": {
+            "criteria": "Tuân thủ hướng dẫn và báo cáo tiến độ\n\nFollows guidance and reports progress",
+            "goodExample": "Bạn Tuấn (Consultant) follow guidance tốt và report progress clearly.",
+            "badExample": "Bạn Ngọc (Consultant) không report, Manager không biết status."
+          }
+        }
+      },
+      {
+        "id": "huan-luyen-chinh-thuc",
+        "index": "5.6",
+        "nameVn": "Huấn luyện chính thức",
+        "nameEn": "Formal Coaching",
+        "levels": {
+          "director": {
+            "criteria": "Là mentor cho quản lý cấp cao; thiết lập mentoring\n\nActs as mentor to senior managers; establishes mentoring",
+            "goodExample": "Giám đốc Minh mentor senior managers về strategic thinking và leadership.",
+            "badExample": "Giám đốc Hùng không mentor, để managers tự develop without guidance."
+          },
+          "snr-mgr": {
+            "criteria": "Huấn luyện chính thức theo kế hoạch; đánh giá tiến bộ\n\nProvides formal coaching per plan; evaluates progress",
+            "goodExample": "Chị Lan (Senior Manager) formal coaching theo plan, track progress và evaluate.",
+            "badExample": "Anh Tùng (Senior Manager) coaching random, không có structure hay followup."
+          },
+          "mgr": {
+            "criteria": "Lập kế hoạch coaching; theo dõi và đánh giá hiệu quả\n\nCreates coaching plans; tracks and evaluates",
+            "goodExample": "Anh Đức (Manager) lập coaching plan cho staff và review hàng tháng.",
+            "badExample": "Chị Hoa (Manager) không có coaching plan, staff không có development path."
+          },
+          "dep-mgr": {
+            "criteria": "Tham gia coaching với vai trò coachee hoặc coach\n\nParticipates in coaching as coachee or coach",
+            "goodExample": "Bạn Linh (Deputy) tham gia làm coachee học hỏi và coach junior.",
+            "badExample": "Bạn Nam (Deputy) không tham gia coaching, cho là waste of time."
+          },
+          "principal": {
+            "criteria": "Coaching về kỹ thuật cho developer cấp dưới\n\nProvides technical coaching for junior developers",
+            "goodExample": "Anh Khoa (Principal) tech coaching cho junior developers thường xuyên.",
+            "badExample": "Chị Thảo (Principal) không coaching, để juniors struggle alone."
+          },
+          "senior": {
+            "criteria": "Tham gia các buổi coaching và áp dụng\n\nParticipates in coaching and applies",
+            "goodExample": "Bạn Hải (Senior) tham gia coaching sessions và áp dụng learnings.",
+            "badExample": "Bạn Mai (Senior) attend coaching nhưng không apply gì."
+          },
+          "consultant": {
+            "criteria": "Tiếp nhận coaching và áp dụng để phát triển\n\nReceives coaching and applies for development",
+            "goodExample": "Bạn Tuấn (Consultant) tiếp nhận coaching và thấy improvement rõ rệt.",
+            "badExample": "Bạn Ngọc (Consultant) không engage trong coaching, không develop."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "group-6",
+    "index": "6",
+    "nameVn": "KỸ NĂNG HUẤN LUYỆN",
+    "nameEn": "COACHING SKILLS DIMENSION",
+    "icon": "🎓",
+    "competencies": [
+      {
+        "id": "ky-nang-giao-tiep-coaching",
+        "index": "6.1",
+        "nameVn": "Kỹ năng giao tiếp coaching",
+        "nameEn": "Communication Skills",
+        "levels": {
+          "director": {
+            "criteria": "Giao tiếp chiến lược\n\nStrategic communication",
+            "goodExample": "Giám đốc Minh truyền đạt strategic vision bằng storytelling đơn giản, ai cũng hiểu.",
+            "badExample": "Giám đốc Hùng nói chuyện abstract, không ai hiểu muốn nói gì."
+          },
+          "snr-mgr": {
+            "criteria": "Giao tiếp khéo léo và ngoại giao\n\nCommunicates with tact and diplomacy",
+            "goodExample": "Chị Lan (Senior Manager) xử lý conversation khó với khách hàng rất diplomatically.",
+            "badExample": "Anh Tùng (Senior Manager) gây conflict với khách vì cách nói thiếu tact."
+          },
+          "mgr": {
+            "criteria": "Thuyết phục, trấn an và đàm phán\n\nConvince, reassure, persuade, negotiate",
+            "goodExample": "Anh Đức (Manager) thuyết phục được khách chấp nhận change request cần thiết.",
+            "badExample": "Chị Hoa (Manager) không negotiate được, phải accept scope creep."
+          },
+          "dep-mgr": {
+            "criteria": "Giao tiếp rõ ràng, ngắn gọn\n\nCommunicates clearly, concisely",
+            "goodExample": "Bạn Linh (Deputy) communicate rõ ràng và concise trong email và meetings.",
+            "badExample": "Bạn Nam (Deputy) email dài dòng confusing, người đọc không hiểu point."
+          },
+          "principal": {
+            "criteria": "Truyền đạt khái niệm kỹ thuật\n\nTranslates technical concepts",
+            "goodExample": "Anh Khoa (Principal) explain technical concepts bằng ngôn ngữ business dễ hiểu.",
+            "badExample": "Chị Thảo (Principal) nói toàn jargon kỹ thuật, khách hàng không hiểu."
+          },
+          "senior": {
+            "criteria": "Giao tiếp rõ ràng mọi cấp\n\nCommunicates clearly to all levels",
+            "goodExample": "Bạn Hải (Senior) communicate effectively với mọi level trong organization.",
+            "badExample": "Bạn Mai (Senior) chỉ communicate tốt với technical people, yếu với business."
+          },
+          "consultant": {
+            "criteria": "Giao tiếp rõ ràng, lắng nghe\n\nCommunicates clearly, listens",
+            "goodExample": "Bạn Tuấn (Consultant) lắng nghe tốt và clarify khi không hiểu.",
+            "badExample": "Bạn Ngọc (Consultant) không lắng nghe, hay miss important points."
+          }
+        }
+      },
+      {
+        "id": "ky-nang-ieu-phoi",
+        "index": "6.2",
+        "nameVn": "Kỹ năng điều phối",
+        "nameEn": "Facilitation Skills",
+        "levels": {
+          "director": {
+            "criteria": "Điều phối họp chiến lược\n\nFacilitates strategic meetings",
+            "goodExample": "Giám đốc Minh điều phối strategic planning meeting với multiple stakeholders hiệu quả.",
+            "badExample": "Giám đốc Hùng để meeting chạy lan man, không có output rõ ràng."
+          },
+          "snr-mgr": {
+            "criteria": "Điều phối workshop hiệu quả\n\nFacilitates workshops effectively",
+            "goodExample": "Chị Lan (Senior Manager) facilitate workshop phức tạp, capture tất cả requirements.",
+            "badExample": "Anh Tùng (Senior Manager) workshop thiếu structure, miss nhiều important points."
+          },
+          "mgr": {
+            "criteria": "Dẫn dắt requirement gathering\n\nLeads requirement gathering",
+            "goodExample": "Anh Đức (Manager) dẫn dắt requirement gathering session với agenda rõ ràng.",
+            "badExample": "Chị Hoa (Manager) workshop không có preparation, waste participants' time."
+          },
+          "dep-mgr": {
+            "criteria": "Điều phối họp nhóm\n\nFacilitates team meetings",
+            "goodExample": "Bạn Linh (Deputy) điều phối team meeting hiệu quả, có output và action items.",
+            "badExample": "Bạn Nam (Deputy) để team meeting kéo dài mà không có kết quả."
+          },
+          "principal": {
+            "criteria": "Điều phối technical review\n\nFacilitates technical review",
+            "goodExample": "Anh Khoa (Principal) facilitate technical review sessions một cách productive.",
+            "badExample": "Chị Thảo (Principal) technical discussions trở thành debates không có kết luận."
+          },
+          "senior": {
+            "criteria": "Hỗ trợ điều phối họp nhỏ\n\nSupports small meetings",
+            "goodExample": "Bạn Hải (Senior) hỗ trợ facilitate small meetings khi được giao.",
+            "badExample": "Bạn Mai (Senior) không biết cách facilitate, để meeting go off track."
+          },
+          "consultant": {
+            "criteria": "Tham gia tích cực vào họp\n\nActively participates in meetings",
+            "goodExample": "Bạn Tuấn (Consultant) tham gia meetings actively và contribute ideas.",
+            "badExample": "Bạn Ngọc (Consultant) ngồi im trong meetings, không contribute gì."
+          }
+        }
+      },
+      {
+        "id": "anh-gia-hieu-suat",
+        "index": "6.3",
+        "nameVn": "Đánh giá hiệu suất",
+        "nameEn": "Performance Evaluation",
+        "levels": {
+          "director": {
+            "criteria": "Phê duyệt tiêu chuẩn đánh giá\n\nApproves evaluation standards",
+            "goodExample": "Giám đốc Minh approve tiêu chuẩn đánh giá công bằng và transparent cho toàn org.",
+            "badExample": "Giám đốc Hùng đánh giá theo cảm tính, không có criteria rõ ràng."
+          },
+          "snr-mgr": {
+            "criteria": "Đánh giá performance toàn diện\n\nConducts comprehensive evaluations",
+            "goodExample": "Chị Lan (Senior Manager) conduct comprehensive performance reviews với data support.",
+            "badExample": "Anh Tùng (Senior Manager) đánh giá sơ sài, staff không biết cần improve gì."
+          },
+          "mgr": {
+            "criteria": "Đánh giá theo KPI và framework\n\nEvaluates against KPIs and framework",
+            "goodExample": "Anh Đức (Manager) đánh giá staff theo KPI và framework rõ ràng.",
+            "badExample": "Chị Hoa (Manager) đánh giá không consistent, thiên vị một số người."
+          },
+          "dep-mgr": {
+            "criteria": "Theo dõi và đánh giá NV cấp dưới\n\nTracks and evaluates junior staff",
+            "goodExample": "Bạn Linh (Deputy) track và đánh giá junior staff performance objectively.",
+            "badExample": "Bạn Nam (Deputy) không track performance, không có data để evaluate."
+          },
+          "principal": {
+            "criteria": "Đánh giá chất lượng code\n\nEvaluates code quality",
+            "goodExample": "Anh Khoa (Principal) evaluate code quality một cách fair và constructive.",
+            "badExample": "Chị Thảo (Principal) code review quá harsh, demotivate developers."
+          },
+          "senior": {
+            "criteria": "Tự đánh giá và thảo luận\n\nSelf-evaluates and discusses",
+            "goodExample": "Bạn Hải (Senior) tự đánh giá honestly và discuss với Manager.",
+            "badExample": "Bạn Mai (Senior) tự đánh giá cao hơn thực tế, không objective."
+          },
+          "consultant": {
+            "criteria": "Hiểu tiêu chí đánh giá\n\nUnderstands evaluation criteria",
+            "goodExample": "Bạn Tuấn (Consultant) hiểu tiêu chí đánh giá và aim to meet expectations.",
+            "badExample": "Bạn Ngọc (Consultant) không hiểu evaluation criteria, surprised at review."
+          }
+        }
+      },
+      {
+        "id": "ky-nang-phan-hoi",
+        "index": "6.4",
+        "nameVn": "Kỹ năng phản hồi",
+        "nameEn": "Feedback Skills",
+        "levels": {
+          "director": {
+            "criteria": "Tạo văn hóa phản hồi cởi mở\n\nCreates open feedback culture",
+            "goodExample": "Giám đốc Minh khuyến khích feedback 360° và act on feedback received.",
+            "badExample": "Giám đốc Hùng không chấp nhận feedback from below, tạo fear culture."
+          },
+          "snr-mgr": {
+            "criteria": "Đưa phản hồi kịp thời, xây dựng\n\nGives timely constructive feedback",
+            "goodExample": "Chị Lan (Senior Manager) give feedback kịp thời và specific, people can act on it.",
+            "badExample": "Anh Tùng (Senior Manager) feedback vague, staff không biết cần làm gì."
+          },
+          "mgr": {
+            "criteria": "Đưa phản hồi rõ ràng, xây dựng\n\nGives clear constructive feedback",
+            "goodExample": "Anh Đức (Manager) balance positive và constructive feedback effectively.",
+            "badExample": "Chị Hoa (Manager) chỉ give negative feedback, team demotivated."
+          },
+          "dep-mgr": {
+            "criteria": "Đưa phản hồi tích cực\n\nGives positive feedback",
+            "goodExample": "Bạn Linh (Deputy) give positive feedback để encourage team members.",
+            "badExample": "Bạn Nam (Deputy) chỉ focus vào mistakes, không acknowledge good work."
+          },
+          "principal": {
+            "criteria": "Đưa phản hồi kỹ thuật qua code review\n\nGives technical feedback via code review",
+            "goodExample": "Anh Khoa (Principal) give technical feedback via code review constructively.",
+            "badExample": "Chị Thảo (Principal) code review comments rude và personal."
+          },
+          "senior": {
+            "criteria": "Đưa và tiếp nhận phản hồi\n\nGives and receives feedback",
+            "goodExample": "Bạn Hải (Senior) give và receive feedback một cách professional.",
+            "badExample": "Bạn Mai (Senior) không biết cách give feedback, either too soft hoặc too harsh."
+          },
+          "consultant": {
+            "criteria": "Tiếp nhận phản hồi cởi mở\n\nReceives feedback openly",
+            "goodExample": "Bạn Tuấn (Consultant) receive feedback gracefully và act to improve.",
+            "badExample": "Bạn Ngọc (Consultant) defensive khi nhận feedback, make excuses."
+          }
+        }
+      },
+      {
+        "id": "thiet-lap-muc-tieu",
+        "index": "6.5",
+        "nameVn": "Thiết lập mục tiêu",
+        "nameEn": "Objective Setting",
+        "levels": {
+          "director": {
+            "criteria": "Thiết lập OKR/KPI cấp công ty\n\nSets company-level OKRs/KPIs",
+            "goodExample": "Giám đốc Minh set company OKRs clear và cascade xuống các teams.",
+            "badExample": "Giám đốc Hùng không có company goals rõ ràng, teams không aligned."
+          },
+          "snr-mgr": {
+            "criteria": "Thiết lập mục tiêu SMART\n\nSets SMART goals for team",
+            "goodExample": "Chị Lan (Senior Manager) set SMART goals cho team và track progress.",
+            "badExample": "Anh Tùng (Senior Manager) goals vague, không measurable, không track."
+          },
+          "mgr": {
+            "criteria": "Thiết lập mục tiêu rõ ràng\n\nSets clear objectives for staff",
+            "goodExample": "Anh Đức (Manager) set clear objectives và help staff understand expectations.",
+            "badExample": "Chị Hoa (Manager) không set objectives, staff không biết aim for what."
+          },
+          "dep-mgr": {
+            "criteria": "Đề xuất mục tiêu cá nhân\n\nProposes personal objectives",
+            "goodExample": "Bạn Linh (Deputy) propose personal objectives aligned với team goals.",
+            "badExample": "Bạn Nam (Deputy) không có personal goals, drift without direction."
+          },
+          "principal": {
+            "criteria": "Thiết lập mục tiêu kỹ thuật\n\nSets technical and code quality goals",
+            "goodExample": "Anh Khoa (Principal) set technical và code quality goals cho team.",
+            "badExample": "Chị Thảo (Principal) không có quality standards, code quality inconsistent."
+          },
+          "senior": {
+            "criteria": "Hiểu mục tiêu và thực hiện\n\nUnderstands and achieves goals",
+            "goodExample": "Bạn Hải (Senior) understand goals và work towards achieving them.",
+            "badExample": "Bạn Mai (Senior) không care about goals, just do daily tasks."
+          },
+          "consultant": {
+            "criteria": "Hiểu mục tiêu và kỳ vọng\n\nUnderstands goals and expectations",
+            "goodExample": "Bạn Tuấn (Consultant) understand expectations và ask khi unclear.",
+            "badExample": "Bạn Ngọc (Consultant) không hiểu expectations, work without direction."
+          }
+        }
+      },
+      {
+        "id": "ke-hoach-su-nghiep",
+        "index": "6.6",
+        "nameVn": "Kế hoạch sự nghiệp",
+        "nameEn": "Career Planning",
+        "levels": {
+          "director": {
+            "criteria": "Định hướng career path tổ chức\n\nSets org career paths",
+            "goodExample": "Giám đốc Minh định hướng career paths rõ ràng: Func track, Tech track, Management track.",
+            "badExample": "Giám đốc Hùng không có career framework, staff không biết phát triển thế nào."
+          },
+          "snr-mgr": {
+            "criteria": "Lập kế hoạch career cho NV\n\nCreates career plans for staff",
+            "goodExample": "Chị Lan (Senior Manager) lập career plan cho từng staff với timeline cụ thể.",
+            "badExample": "Anh Tùng (Senior Manager) không discuss career với staff, họ feel stuck."
+          },
+          "mgr": {
+            "criteria": "Hỗ trợ NV xây dựng career\n\nSupports staff career paths",
+            "goodExample": "Anh Đức (Manager) hỗ trợ staff xây dựng career path phù hợp với aspirations.",
+            "badExample": "Chị Hoa (Manager) không care về career của staff, chỉ focus delivery."
+          },
+          "dep-mgr": {
+            "criteria": "Hiểu career ladder\n\nUnderstands career ladder",
+            "goodExample": "Bạn Linh (Deputy) hiểu career ladder và biết cần gì để lên level tiếp theo.",
+            "badExample": "Bạn Nam (Deputy) không hiểu career path, không có development direction."
+          },
+          "principal": {
+            "criteria": "Xây dựng technical expertise\n\nBuilds technical expertise",
+            "goodExample": "Anh Khoa (Principal) xây dựng technical expertise path từ junior đến architect.",
+            "badExample": "Chị Thảo (Principal) không mentor về career, juniors không biết grow thế nào."
+          },
+          "senior": {
+            "criteria": "Tìm hiểu career path\n\nLearns about career paths",
+            "goodExample": "Bạn Hải (Senior) tìm hiểu career options và discuss với Manager.",
+            "badExample": "Bạn Mai (Senior) không có career ambition, satisfied với current level."
+          },
+          "consultant": {
+            "criteria": "Hiểu về cơ hội phát triển\n\nUnderstands development opportunities",
+            "goodExample": "Bạn Tuấn (Consultant) hiểu development opportunities và aim for growth.",
+            "badExample": "Bạn Ngọc (Consultant) không có career goal, just do minimum required."
+          }
+        }
+      },
+      {
+        "id": "tao-anh-huong",
+        "index": "6.7",
+        "nameVn": "Tạo ảnh hưởng",
+        "nameEn": "Influencing Skills",
+        "levels": {
+          "director": {
+            "criteria": "Ảnh hưởng đến chiến lược\n\nInfluences strategy and decisions",
+            "goodExample": "Giám đốc Minh influence board decisions và company strategy direction.",
+            "badExample": "Giám đốc Hùng không có influence, decisions made without his input."
+          },
+          "snr-mgr": {
+            "criteria": "Ảnh hưởng tích cực đến NV\n\nPositively influences staff",
+            "goodExample": "Chị Lan (Senior Manager) positively influence staff behavior và attitudes.",
+            "badExample": "Anh Tùng (Senior Manager) negative influence, staff copy bad habits."
+          },
+          "mgr": {
+            "criteria": "Thuyết phục và ảnh hưởng KH\n\nConvinces and influences customers",
+            "goodExample": "Anh Đức (Manager) thuyết phục khách hàng chấp nhận best practices.",
+            "badExample": "Chị Hoa (Manager) không influence được khách, accept bad requirements."
+          },
+          "dep-mgr": {
+            "criteria": "Ảnh hưởng tích cực đồng nghiệp\n\nPositively influences colleagues",
+            "goodExample": "Bạn Linh (Deputy) positively influence peers qua good work ethics.",
+            "badExample": "Bạn Nam (Deputy) negative influence, than phiền làm team demotivated."
+          },
+          "principal": {
+            "criteria": "Ảnh hưởng quyết định kỹ thuật\n\nInfluences technical decisions",
+            "goodExample": "Anh Khoa (Principal) influence technical decisions của team và projects.",
+            "badExample": "Chị Thảo (Principal) không có technical credibility để influence."
+          },
+          "senior": {
+            "criteria": "Ảnh hưởng tinh thần đồng đội\n\nInfluences team spirit",
+            "goodExample": "Bạn Hải (Senior) influence team spirit qua positive attitude.",
+            "badExample": "Bạn Mai (Senior) toxic attitude ảnh hưởng xấu đến team morale."
+          },
+          "consultant": {
+            "criteria": "Học cách ảnh hưởng tích cực\n\nLearns to influence positively",
+            "goodExample": "Bạn Tuấn (Consultant) học cách influence positively từ senior.",
+            "badExample": "Bạn Ngọc (Consultant) không có positive influence, sometimes negative."
+          }
+        }
+      },
+      {
+        "id": "ky-nang-lang-nghe",
+        "index": "6.8",
+        "nameVn": "Kỹ năng lắng nghe",
+        "nameEn": "Listening Skills",
+        "levels": {
+          "director": {
+            "criteria": "Lắng nghe nhiều stakeholders\n\nListens to multiple stakeholders",
+            "goodExample": "Giám đốc Minh lắng nghe multiple stakeholders và balance diverse interests.",
+            "badExample": "Giám đốc Hùng chỉ nghe những gì muốn nghe, ignore uncomfortable truths."
+          },
+          "snr-mgr": {
+            "criteria": "Lắng nghe tích cực NV và KH\n\nActively listens to staff and customers",
+            "goodExample": "Chị Lan (Senior Manager) actively listen staff và customers, make them feel heard.",
+            "badExample": "Anh Tùng (Senior Manager) interrupt people, không để họ nói hết ý."
+          },
+          "mgr": {
+            "criteria": "Lắng nghe hiểu sâu vấn đề\n\nListens to deeply understand issues",
+            "goodExample": "Anh Đức (Manager) listen deeply để understand root cause của issues.",
+            "badExample": "Chị Hoa (Manager) jump to solutions mà không hiểu problem fully."
+          },
+          "dep-mgr": {
+            "criteria": "Lắng nghe KH và team\n\nListens to customer and team needs",
+            "goodExample": "Bạn Linh (Deputy) listen customer và team needs attentively.",
+            "badExample": "Bạn Nam (Deputy) half-listen, miss important information."
+          },
+          "principal": {
+            "criteria": "Lắng nghe yêu cầu kỹ thuật\n\nListens to technical requirements",
+            "goodExample": "Anh Khoa (Principal) listen technical requirements carefully để không miss edge cases.",
+            "badExample": "Chị Thảo (Principal) assume đã hiểu mà không listen đủ, miss requirements."
+          },
+          "senior": {
+            "criteria": "Lắng nghe hướng dẫn senior\n\nListens to senior guidance",
+            "goodExample": "Bạn Hải (Senior) listen senior guidance và follow instructions accurately.",
+            "badExample": "Bạn Mai (Senior) không listen kỹ, làm sai rồi phải rework."
+          },
+          "consultant": {
+            "criteria": "Lắng nghe tích cực trong họp\n\nActively listens in meetings",
+            "goodExample": "Bạn Tuấn (Consultant) actively listen trong meetings và ask clarifying questions.",
+            "badExample": "Bạn Ngọc (Consultant) zone out trong meetings, miss action items."
+          }
+        }
+      },
+      {
+        "id": "ky-nang-tom-tat",
+        "index": "6.9",
+        "nameVn": "Kỹ năng tóm tắt",
+        "nameEn": "Summarisation",
+        "levels": {
+          "director": {
+            "criteria": "Tóm tắt chiến lược và định hướng phức tạp thành thông điệp rõ ràng\n\nSummarizes complex strategy and direction into clear messages",
+            "goodExample": "Giám đốc Minh summarize complex strategy thành 3 key messages cho all-hands.",
+            "badExample": "Giám đốc Hùng presentations dài dòng, không ai nhớ takeaways."
+          },
+          "snr-mgr": {
+            "criteria": "Tóm tắt vấn đề phức tạp và trình bày giải pháp cho lãnh đạo cấp cao\n\nSummarizes complex issues and presents solutions to senior leadership",
+            "goodExample": "Chị Lan (Senior Manager) summarize complex issues và present solutions cho BOD.",
+            "badExample": "Anh Tùng (Senior Manager) present confusing, BOD không understand situation."
+          },
+          "mgr": {
+            "criteria": "Tóm tắt tiến độ dự án và vấn đề chính cho stakeholders\n\nSummarizes project progress and key issues for stakeholders",
+            "goodExample": "Anh Đức (Manager) summarize project status rõ ràng cho steering committee.",
+            "badExample": "Chị Hoa (Manager) status reports dài nhưng không capture key points."
+          },
+          "dep-mgr": {
+            "criteria": "Tóm tắt cuộc họp và ghi chú hành động rõ ràng\n\nSummarizes meetings and notes actions clearly",
+            "goodExample": "Bạn Linh (Deputy) summarize meetings với clear action items và owners.",
+            "badExample": "Bạn Nam (Deputy) meeting notes dài nhưng không có structure, hard to follow."
+          },
+          "principal": {
+            "criteria": "Tóm tắt giải pháp kỹ thuật phức tạp thành ngôn ngữ dễ hiểu\n\nSummarizes complex technical solutions into easy-to-understand language",
+            "goodExample": "Anh Khoa (Principal) explain technical solution complexity bằng simple summary.",
+            "badExample": "Chị Thảo (Principal) technical explanations quá complex, no one understands."
+          },
+          "senior": {
+            "criteria": "Tóm tắt công việc đã hoàn thành và báo cáo tiến độ\n\nSummarizes completed work and reports progress",
+            "goodExample": "Bạn Hải (Senior) report progress clearly và concisely.",
+            "badExample": "Bạn Mai (Senior) progress reports verbose, không clear status."
+          },
+          "consultant": {
+            "criteria": "Ghi chép và tóm tắt meeting notes chính xác\n\nTakes notes and summarizes meeting notes accurately",
+            "goodExample": "Bạn Tuấn (Consultant) take meeting notes accurately và summarize key points.",
+            "badExample": "Bạn Ngọc (Consultant) meeting notes incomplete, miss important decisions."
+          }
+        }
+      },
+      {
+        "id": "phan-anh-su-viec-cam-xuc",
+        "index": "6.10",
+        "nameVn": "Phản ánh sự việc & cảm xúc",
+        "nameEn": "Reflection of Fact & Feelings",
+        "levels": {
+          "director": {
+            "criteria": "Hiểu và phản ánh sự việc và cảm xúc ở cấp tổ chức để dẫn dắt\n\nUnderstands and reflects facts and feelings at organizational level to lead",
+            "goodExample": "Giám đốc Minh nhận ra team đang burnout và adjust workload kịp thời.",
+            "badExample": "Giám đốc Hùng không nhận ra team stress, push đến khi nhiều người resign."
+          },
+          "snr-mgr": {
+            "criteria": "Phản ánh chính xác sự việc và cảm xúc của nhân viên trong coaching\n\nAccurately reflects facts and feelings of staff in coaching",
+            "goodExample": "Chị Lan (Senior Manager) reflect staff concerns accurately trong coaching sessions.",
+            "badExample": "Anh Tùng (Senior Manager) dismiss staff feelings, không empathize."
+          },
+          "mgr": {
+            "criteria": "Nhận biết và phản ánh cảm xúc của nhân viên khi đưa phản hồi\n\nRecognizes and reflects staff emotions when giving feedback",
+            "goodExample": "Anh Đức (Manager) nhận biết team emotions và adjust communication style.",
+            "badExample": "Chị Hoa (Manager) deliver bad news insensitively, hurt team morale."
+          },
+          "dep-mgr": {
+            "criteria": "Hiểu cảm xúc của đội nhóm và điều chỉnh cách tiếp cận phù hợp\n\nUnderstands team emotions and adjusts approach accordingly",
+            "goodExample": "Bạn Linh (Deputy) understand team dynamics và adjust approach accordingly.",
+            "badExample": "Bạn Nam (Deputy) không nhận ra conflict trong team cho đến khi explode."
+          },
+          "principal": {
+            "criteria": "Phản ánh sự việc kỹ thuật một cách khách quan và xây dựng\n\nReflects technical facts objectively and constructively",
+            "goodExample": "Anh Khoa (Principal) reflect technical facts objectively trong code review.",
+            "badExample": "Chị Thảo (Principal) code review mang tính personal attack, không objective."
+          },
+          "senior": {
+            "criteria": "Hiểu cảm xúc của đồng nghiệp và phản hồi phù hợp\n\nUnderstands colleagues' emotions and responds appropriately",
+            "goodExample": "Bạn Hải (Senior) understand colleagues' feelings và respond appropriately.",
+            "badExample": "Bạn Mai (Senior) insensitive với colleagues, gây friction."
+          },
+          "consultant": {
+            "criteria": "Nhận biết khi cần hỗ trợ từ cấp trên về vấn đề nhạy cảm\n\nRecognizes when to seek support from superiors on sensitive issues",
+            "goodExample": "Bạn Tuấn (Consultant) nhận ra khi cần seek help từ seniors về sensitive issues.",
+            "badExample": "Bạn Ngọc (Consultant) handle sensitive situations poorly, make things worse."
+          }
+        }
+      },
+      {
+        "id": "ky-nang-at-cau-hoi",
+        "index": "6.11",
+        "nameVn": "Kỹ năng đặt câu hỏi",
+        "nameEn": "Questioning Skills",
+        "levels": {
+          "director": {
+            "criteria": "Đặt câu hỏi chiến lược để thách thức tư duy và mở ra cơ hội mới\n\nAsks strategic questions to challenge thinking and open new opportunities",
+            "goodExample": "Giám đốc Minh hỏi strategic questions mở ra opportunities mới cho business.",
+            "badExample": "Giám đốc Hùng không challenge thinking, miss strategic opportunities."
+          },
+          "snr-mgr": {
+            "criteria": "Đặt câu hỏi mở để khuyến khích nhân viên suy nghĩ và phát triển\n\nAsks open questions to encourage staff thinking and development",
+            "goodExample": "Chị Lan (Senior Manager) hỏi open questions khuyến khích staff think deeper.",
+            "badExample": "Anh Tùng (Senior Manager) hỏi leading questions, staff chỉ confirm ý của sếp."
+          },
+          "mgr": {
+            "criteria": "Đặt câu hỏi đúng để hiểu sâu vấn đề và dẫn dắt cuộc thảo luận\n\nAsks right questions to deeply understand issues and guide discussions",
+            "goodExample": "Anh Đức (Manager) hỏi đúng questions để understand root cause của issues.",
+            "badExample": "Chị Hoa (Manager) không hỏi đủ deep, solve symptoms không solve problems."
+          },
+          "dep-mgr": {
+            "criteria": "Đặt câu hỏi để làm rõ yêu cầu và kỳ vọng\n\nAsks questions to clarify requirements and expectations",
+            "goodExample": "Bạn Linh (Deputy) hỏi để clarify requirements và expectations rõ ràng.",
+            "badExample": "Bạn Nam (Deputy) assume đã hiểu mà không hỏi, làm sai requirements."
+          },
+          "principal": {
+            "criteria": "Đặt câu hỏi kỹ thuật sâu để phát hiện edge-case và gap\n\nAsks deep technical questions to discover edge-cases and gaps",
+            "goodExample": "Anh Khoa (Principal) hỏi technical questions sâu để discover edge cases và gaps.",
+            "badExample": "Chị Thảo (Principal) không hỏi enough, miss important technical requirements."
+          },
+          "senior": {
+            "criteria": "Đặt câu hỏi để hiểu rõ hơn công việc và yêu cầu\n\nAsks questions to better understand work and requirements",
+            "goodExample": "Bạn Hải (Senior) hỏi questions để hiểu work và requirements better.",
+            "badExample": "Bạn Mai (Senior) ngại hỏi vì sợ bị đánh giá là không biết."
+          },
+          "consultant": {
+            "criteria": "Biết khi nào cần hỏi và chủ động tìm kiếm hướng dẫn\n\nJudges when to ask and proactively seeks guidance",
+            "goodExample": "Bạn Tuấn (Consultant) judge when cần hỏi và proactively seek guidance.",
+            "badExample": "Bạn Ngọc (Consultant) không hỏi khi không hiểu, làm sai rồi mới biết."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "group-7",
+    "index": "7",
+    "nameVn": "GIẢI QUYẾT VẤN ĐỀ & ĐỔI MỚI",
+    "nameEn": "PROBLEM SOLVING & INNOVATION",
+    "icon": "💡",
+    "competencies": [
+      {
+        "id": "giai-quyet-van-e",
+        "index": "7.1",
+        "nameVn": "Giải quyết vấn đề",
+        "nameEn": "Problem Solving",
+        "levels": {
+          "director": {
+            "criteria": "Thể hiện phán đoán đúng đắn, kịp thời và chiến lược trong giải quyết vấn đề\n\nDemonstrates sound, timely and strategic judgment in problem solving",
+            "goodExample": "Giám đốc Minh đưa ra quyết định chiến lược kịp thời khi dự án gặp crisis, cứu được dự án.",
+            "badExample": "Giám đốc Hùng chần chừ không quyết định, để crisis escalate thành disaster."
+          },
+          "snr-mgr": {
+            "criteria": "Suy nghĩ kỹ về vấn đề phức tạp và đưa ra giải pháp phù hợp cho nhiều bên\n\nThinks through complex problems and provides solutions for multiple stakeholders",
+            "goodExample": "Chị Lan (Senior Manager) suy nghĩ kỹ về vấn đề phức tạp và đề xuất giải pháp win-win.",
+            "badExample": "Anh Tùng (Senior Manager) đưa ra solutions chỉ tốt cho 1 bên, gây conflict."
+          },
+          "mgr": {
+            "criteria": "Báo cáo vấn đề và thách thức cho cấp trên kèm phân tích và đề xuất\n\nReports problems to seniors with analysis and recommendations",
+            "goodExample": "Anh Đức (Manager) báo cáo issues với phân tích RCA và đề xuất options cụ thể.",
+            "badExample": "Chị Hoa (Manager) chỉ escalate problems mà không có analysis hay recommendations."
+          },
+          "dep-mgr": {
+            "criteria": "Đưa khuyến nghị cho quản lý về vấn đề và thách thức khách hàng\n\nProvides recommendations to managers on problems and customer issues",
+            "goodExample": "Bạn Linh (Deputy) đưa recommendations kèm pros/cons cho Manager quyết định.",
+            "badExample": "Bạn Nam (Deputy) dump problems lên Manager mà không suy nghĩ solutions."
+          },
+          "principal": {
+            "criteria": "Phân tích vấn đề kỹ thuật phức tạp một cách có hệ thống và đề xuất nhiều phương án\n\nAnalyzes complex technical problems systematically and proposes multiple options",
+            "goodExample": "Anh Khoa (Principal) phân tích vấn đề kỹ thuật systematically và đề xuất multiple options.",
+            "badExample": "Chị Thảo (Principal) chỉ đưa 1 solution mà không consider alternatives."
+          },
+          "senior": {
+            "criteria": "Suy nghĩ kỹ về vấn đề và giải pháp có thể, cố gắng tự giải quyết trước\n\nThinks through problems and possible solutions, tries to solve independently first",
+            "goodExample": "Bạn Hải (Senior) suy nghĩ kỹ và cố solve trước khi escalate.",
+            "badExample": "Bạn Mai (Senior) escalate mọi vấn đề mà không cố tự giải quyết."
+          },
+          "consultant": {
+            "criteria": "Suy nghĩ kỹ về vấn đề và giải pháp có thể trước khi hỏi\n\nThinks through problems and possible solutions before asking",
+            "goodExample": "Bạn Tuấn (Consultant) suy nghĩ về possible solutions trước khi hỏi senior.",
+            "badExample": "Bạn Ngọc (Consultant) hỏi ngay khi gặp vấn đề mà không try to solve first."
+          }
+        }
+      },
+      {
+        "id": "oi-moi-cai-tien",
+        "index": "7.2",
+        "nameVn": "Đổi mới & Cải tiến",
+        "nameEn": "Innovation & Improvement",
+        "levels": {
+          "director": {
+            "criteria": "Xây dựng văn hóa đổi mới và cải tiến liên tục trong toàn tổ chức\n\nBuilds culture of innovation and continuous improvement across organization",
+            "goodExample": "Giám đốc Minh xây dựng culture đổi mới: có innovation budget và reward initiatives.",
+            "badExample": "Giám đốc Hùng reject tất cả ideas mới, organization stagnate."
+          },
+          "snr-mgr": {
+            "criteria": "Khuyến khích và đánh giá các sáng kiến cải tiến từ đội nhóm\n\nEncourages and evaluates improvement initiatives from teams",
+            "goodExample": "Chị Lan (Senior Manager) encourage và evaluate improvement initiatives từ team.",
+            "badExample": "Anh Tùng (Senior Manager) dismiss ideas từ staff mà không consider."
+          },
+          "mgr": {
+            "criteria": "Chủ động đề xuất cải tiến quy trình làm việc và phương pháp tư vấn\n\nProactively proposes improvements to work processes and consulting methods",
+            "goodExample": "Anh Đức (Manager) propose process improvements và implement changes.",
+            "badExample": "Chị Hoa (Manager) không có improvement initiatives, do things same way always."
+          },
+          "dep-mgr": {
+            "criteria": "Đóng góp ý tưởng cải tiến và tham gia các nhóm cải tiến\n\nContributes improvement ideas and participates in improvement teams",
+            "goodExample": "Bạn Linh (Deputy) contribute improvement ideas và participate trong initiatives.",
+            "badExample": "Bạn Nam (Deputy) không có ideas, just follow existing processes."
+          },
+          "principal": {
+            "criteria": "Nghiên cứu và thử nghiệm công nghệ mới, tính năng mới của D365\n\nResearches and experiments with new technologies and new D365 features",
+            "goodExample": "Anh Khoa (Principal) research và experiment với new D365 features để improve solutions.",
+            "badExample": "Chị Thảo (Principal) không try new things, use same old approaches."
+          },
+          "senior": {
+            "criteria": "Đề xuất cải tiến nhỏ trong phạm vi công việc hàng ngày\n\nSuggests small improvements within scope of daily work",
+            "goodExample": "Bạn Hải (Senior) suggest small improvements trong daily work.",
+            "badExample": "Bạn Mai (Senior) accept inefficiencies mà không try to improve."
+          },
+          "consultant": {
+            "criteria": "Cởi mở đón nhận cách làm mới và công nghệ mới\n\nIs open to new ways of working and new technologies",
+            "goodExample": "Bạn Tuấn (Consultant) open to new ways of working và new technologies.",
+            "badExample": "Bạn Ngọc (Consultant) resist change, prefer old comfortable ways."
+          }
+        }
+      },
+      {
+        "id": "tu-duy-phan-bien",
+        "index": "7.3",
+        "nameVn": "Tư duy phản biện",
+        "nameEn": "Critical Thinking",
+        "levels": {
+          "director": {
+            "criteria": "Cởi mở với ý tưởng mới và thách thức tư duy truyền thống\n\nIs open to new ideas and challenges traditional thinking",
+            "goodExample": "Giám đốc Minh challenge traditional thinking và open to new ideas từ mọi level.",
+            "badExample": "Giám đốc Hùng không accept challenges, my way or highway."
+          },
+          "snr-mgr": {
+            "criteria": "Đánh giá đa chiều trước khi đưa ra quyết định quan trọng\n\nEvaluates multiple perspectives before making important decisions",
+            "goodExample": "Chị Lan (Senior Manager) evaluate multiple perspectives trước important decisions.",
+            "badExample": "Anh Tùng (Senior Manager) decide quickly mà không consider all angles."
+          },
+          "mgr": {
+            "criteria": "Challenge assumptions và đặt câu hỏi đúng để ra quyết định\n\nChallenges assumptions and asks right questions for decision making",
+            "goodExample": "Anh Đức (Manager) challenge assumptions và ask right questions trước khi decide.",
+            "badExample": "Chị Hoa (Manager) accept things at face value, không dig deeper."
+          },
+          "dep-mgr": {
+            "criteria": "Phân tích đa chiều trước khi đưa ra khuyến nghị\n\nAnalyzes multiple dimensions before making recommendations",
+            "goodExample": "Bạn Linh (Deputy) analyze từ nhiều góc độ trước khi đưa recommendations.",
+            "badExample": "Bạn Nam (Deputy) one-dimensional thinking, miss important considerations."
+          },
+          "principal": {
+            "criteria": "Đánh giá tính khả thi và trade-off của các giải pháp kỹ thuật\n\nEvaluates feasibility and trade-offs of technical solutions",
+            "goodExample": "Anh Khoa (Principal) evaluate feasibility và trade-offs của technical solutions.",
+            "badExample": "Chị Thảo (Principal) không evaluate trade-offs, choose solutions poorly."
+          },
+          "senior": {
+            "criteria": "Đặt câu hỏi để hiểu rõ vấn đề trước khi hành động\n\nAsks questions to understand issues before acting",
+            "goodExample": "Bạn Hải (Senior) hỏi questions để understand issues trước khi act.",
+            "badExample": "Bạn Mai (Senior) act first mà không think through, cause problems."
+          },
+          "consultant": {
+            "criteria": "Suy nghĩ logic và có hệ thống về vấn đề được giao\n\nThinks logically and systematically about assigned issues",
+            "goodExample": "Bạn Tuấn (Consultant) think logically và systematically về assigned issues.",
+            "badExample": "Bạn Ngọc (Consultant) không think through, make careless mistakes."
+          }
+        }
+      },
+      {
+        "id": "cot-c-i-cap-o-nang-luc-tu-cao-director-l9-en-thap-",
+        "index": "",
+        "nameVn": "Cột C-I: Cấp độ năng lực từ cao (Director L9) đến thấp (Consultant L1-3)",
+        "nameEn": "",
+        "levels": {
+          "director": {
+            "criteria": "",
+            "goodExample": "",
+            "badExample": ""
+          },
+          "snr-mgr": {
+            "criteria": "",
+            "goodExample": "",
+            "badExample": ""
+          },
+          "mgr": {
+            "criteria": "",
+            "goodExample": "",
+            "badExample": ""
+          },
+          "dep-mgr": {
+            "criteria": "",
+            "goodExample": "",
+            "badExample": ""
+          },
+          "principal": {
+            "criteria": "",
+            "goodExample": "",
+            "badExample": ""
+          },
+          "senior": {
+            "criteria": "",
+            "goodExample": "",
+            "badExample": ""
+          },
+          "consultant": {
+            "criteria": "",
+            "goodExample": "",
+            "badExample": ""
+          }
+        }
+      }
+    ]
+  }
+];
+
+// Flatten for backwards compat with overrides system
+const COMPETENCY_FRAMEWORK_BASE = COMPETENCY_GROUPS_BASE.flatMap(g => g.competencies.map(c => ({
+  id: c.id, name: c.nameVn, nameEn: c.nameEn, icon: g.icon, description: g.nameVn,
+  groupId: g.id, groupName: g.nameVn, levels: c.levels
+})));
+// Mutable runtime copy (override-merged)
+let COMPETENCY_FRAMEWORK = JSON.parse(JSON.stringify(COMPETENCY_FRAMEWORK_BASE));
+
+const COMPETENCY_OVERRIDES_COLLECTION = 'competency_overrides';
+let _competencyOverrides = {};
+
+async function loadCompetencyOverrides() {
+  if (!window.fb || !window.fb.db) return;
+  try {
+    const snap = await window.fb.getDocs(window.fb.collection(window.fb.db, COMPETENCY_OVERRIDES_COLLECTION));
+    _competencyOverrides = {};
+    snap.forEach(d => {
+      const data = d.data();
+      _competencyOverrides[data.compId] = { ...data, fsId: d.id };
+    });
+    applyCompetencyOverrides();
+  } catch (e) {
+    console.warn('Cannot load competency_overrides:', e.message);
+  }
+}
+
+function applyCompetencyOverrides() {
+  const base = JSON.parse(JSON.stringify(COMPETENCY_FRAMEWORK_BASE));
+  const out = [];
+  base.forEach(c => {
+    const ov = _competencyOverrides[c.id];
+    if (!ov || ov.action === 'add') { out.push(c); return; }
+    if (ov.action === 'delete') return;
+    if (ov.action === 'edit') { out.push({ ...c, ...ov.data }); return; }
+    out.push(c);
+  });
+  Object.values(_competencyOverrides).forEach(ov => {
+    if (ov.action === 'add' && !base.some(c => c.id === ov.compId)) out.push(ov.data);
+  });
+  COMPETENCY_FRAMEWORK.length = 0;
+  out.forEach(c => COMPETENCY_FRAMEWORK.push(c));
+}
+
+function renderCompetencyFramework() {
+  const panel = document.getElementById('competency');
+  if (!panel) return;
+
+  // Build groups from current COMPETENCY_FRAMEWORK (which is flattened) — group by groupId
+  const groupsMap = new Map();
+  COMPETENCY_GROUPS_BASE.forEach(g => groupsMap.set(g.id, { ...g, competencies: [] }));
+  COMPETENCY_FRAMEWORK.forEach(c => {
+    const g = groupsMap.get(c.groupId);
+    if (g) g.competencies.push(c);
+    else {
+      // Standalone (admin-added without group)
+      if (!groupsMap.has('custom')) groupsMap.set('custom', { id: 'custom', index: '?', nameVn: 'Tuỳ chỉnh', nameEn: 'Custom', icon: '📌', competencies: [] });
+      groupsMap.get('custom').competencies.push(c);
+    }
+  });
+  const groupsOrdered = Array.from(groupsMap.values()).filter(g => g.competencies.length > 0);
+  const totalComp = groupsOrdered.reduce((s, g) => s + g.competencies.length, 0);
+
+  panel.innerHTML = `
+    <div style="background:linear-gradient(135deg, #7C3AED 0%, #16A34A 100%); color:#FFF; padding:14px 18px; border-radius:10px; margin-bottom:14px;">
+      <h2 style="margin:0 0 4px 0; color:#FFF;">🎯 Khung Năng lực Consultant — NaviWorld</h2>
+      <p style="margin:0; font-size:13px; opacity:0.92;">${totalComp} năng lực được phân theo ${groupsOrdered.length} nhóm × 7 cấp độ. Mỗi cấp có tiêu chí + ví dụ thực tế (tốt/chưa tốt).</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:6px; margin-bottom:14px;">
+      ${COMPETENCY_LEVELS.map(l => `
+        <div style="background:${l.color}; color:#FFF; padding:8px 10px; border-radius:8px; text-align:center;">
+          <div style="font-size:20px;">${l.icon}</div>
+          <div style="font-weight:700; font-size:13px;">${escapeHtml(l.labelVn)}</div>
+          <div style="font-size:10px; opacity:0.85;">${escapeHtml(l.labelEn)} · ${escapeHtml(l.tier)}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;">
+      ${groupsOrdered.map(g => `<button onclick="scrollToCompGroup('${g.id}')" style="padding:6px 12px; background:var(--card); border:1px solid var(--border); border-radius:20px; cursor:pointer; font-size:12px;">${g.icon} ${escapeHtml(g.index)}. ${escapeHtml(g.nameVn).substring(0, 30)}${g.nameVn.length > 30 ? '...' : ''} <span style="color:var(--text-muted);">(${g.competencies.length})</span></button>`).join('')}
+    </div>
+
+    ${groupsOrdered.map(g => renderCompetencyGroup(g)).join('')}
+
+    <div style="background:var(--blue-bg); border-radius:8px; padding:14px; margin-top:14px; font-size:13px;">
+      <strong>💡 Cách dùng:</strong> Click 1 nhóm để mở rộng → click 1 năng lực → so sánh tiêu chí + ví dụ "tốt vs chưa tốt" giữa các cấp độ. Tự đánh giá khoảng cách phát triển. Admin có thể chỉnh sửa qua Quản trị → Competency editor.
+    </div>
+  `;
+}
+
+function scrollToCompGroup(groupId) {
+  const el = document.getElementById('comp-group-' + groupId);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.open = true;
+}
+
+function renderCompetencyGroup(g) {
+  return `
+    <details id="comp-group-${escapeHtml(g.id)}" style="background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:10px;">
+      <summary style="padding:14px 18px; cursor:pointer; display:flex; align-items:center; gap:10px; font-weight:600; background:linear-gradient(135deg, #1F3864 0%, #2E5C9E 100%); color:#FFF; border-radius:10px;">
+        <span style="font-size:24px;">${g.icon}</span>
+        <div style="flex:1;">
+          <div style="color:#FFF;">${escapeHtml(g.index)}. ${escapeHtml(g.nameVn)}</div>
+          <div style="font-size:11px; font-weight:normal; opacity:0.85;">${escapeHtml(g.nameEn || '')}</div>
+        </div>
+        <span style="font-size:12px; font-weight:normal; opacity:0.85;">${g.competencies.length} năng lực</span>
+      </summary>
+      <div style="padding:10px;">
+        ${g.competencies.map(c => renderCompetencyItem(c)).join('')}
+      </div>
+    </details>
+  `;
+}
+
+function renderCompetencyItem(c) {
+  return `
+    <details style="background:var(--bg, #FAFBFC); border:1px solid var(--border); border-radius:8px; margin-bottom:8px;">
+      <summary style="padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
+        <span style="background:var(--blue-bg); color:var(--primary); font-size:11px; padding:2px 6px; border-radius:8px;">${escapeHtml(c.index || '')}</span>
+        <span style="flex:1; font-size:14px;">${escapeHtml(c.nameVn)}</span>
+        <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">${escapeHtml(c.nameEn || '')}</span>
+      </summary>
+      <div style="padding:10px 14px; border-top:1px solid var(--border);">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:8px;">
+          ${COMPETENCY_LEVELS.map(l => {
+            const lvl = (c.levels || {})[l.key] || { criteria: '', goodExample: '', badExample: '' };
+            return `
+              <div style="background:#FFF; border:1px solid var(--border); border-left:4px solid ${l.color}; border-radius:6px; padding:10px 12px;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                  <span style="font-size:16px;">${l.icon}</span>
+                  <strong style="color:${l.color}; font-size:13px;">${escapeHtml(l.labelVn)}</strong>
+                  <span style="font-size:10px; color:var(--text-muted);">${escapeHtml(l.tier)}</span>
+                </div>
+                <div style="font-size:12px; line-height:1.6; margin-bottom:8px; color:var(--text);">${escapeHtml(lvl.criteria || '(chưa có)').replace(/\n/g, '<br>')}</div>
+                ${lvl.goodExample ? `
+                  <div style="background:#DCFCE7; border-left:3px solid #16A34A; padding:6px 8px; border-radius:4px; margin-bottom:4px; font-size:11px; line-height:1.5;">
+                    <strong style="color:#15803D;">✅ Ví dụ tốt:</strong> ${escapeHtml(lvl.goodExample)}
+                  </div>
+                ` : ''}
+                ${lvl.badExample ? `
+                  <div style="background:#FEE2E2; border-left:3px solid #DC2626; padding:6px 8px; border-radius:4px; font-size:11px; line-height:1.5;">
+                    <strong style="color:#B91C1C;">❌ Ví dụ chưa tốt:</strong> ${escapeHtml(lvl.badExample)}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </details>
+  `;
+}
+
+
+
+// ============ COMPETENCY ADMIN EDITOR ============
+function renderCompetencyAdmin(users) {
+  return `
+    <div style="background:var(--card); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:14px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+        <h3 style="margin:0;">🎯 Quản lý Khung Năng lực (${COMPETENCY_FRAMEWORK.length})</h3>
+        <button onclick="openCompetencyEditor(null)" style="padding:8px 14px; background:var(--primary); color:#FFF; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px;">➕ Thêm năng lực mới</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${COMPETENCY_FRAMEWORK.map(c => {
+          const ov = _competencyOverrides[c.id];
+          let badge = '';
+          if (ov && ov.action === 'add') badge = '<span style="background:#16A34A; color:#FFF; font-size:10px; padding:2px 6px; border-radius:8px; margin-left:6px;">MỚI</span>';
+          else if (ov && ov.action === 'edit') badge = '<span style="background:#F59E0B; color:#FFF; font-size:10px; padding:2px 6px; border-radius:8px; margin-left:6px;">ĐÃ SỬA</span>';
+          const safeId = JSON.stringify(c.id);
+          return `
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:6px;">
+              <span style="font-size:24px;">${c.icon || '🎯'}</span>
+              <div style="flex:1; min-width:0;">
+                <div style="font-weight:600; font-size:14px;">${escapeHtml(c.name)}${badge}</div>
+                <div style="font-size:11px; color:var(--text-muted);">
+                  <code style="background:var(--blue-bg); padding:1px 4px; border-radius:3px;">${escapeHtml(c.id)}</code>
+                  · ${escapeHtml((c.description || '').substring(0, 80))}
+                </div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button onclick='openCompetencyEditor(${safeId})' style="padding:6px 12px; background:transparent; border:1px solid var(--border); border-radius:5px; cursor:pointer; font-size:12px;">✏️ Sửa</button>
+                <button onclick='deleteCompetency(${safeId})' style="padding:6px 10px; background:transparent; color:#DC2626; border:1px solid #FCA5A5; border-radius:5px; cursor:pointer; font-size:12px;">🗑️</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div style="margin-top:10px; padding:8px 10px; background:var(--blue-bg); border-radius:6px; font-size:12px; color:var(--text-muted);">
+        💡 Firestore rule: <code>match /competency_overrides/{doc} { allow read,write: if isAdmin(); }</code>
+      </div>
+    </div>
+  `;
+}
+
+function openCompetencyEditor(compId) {
+  const isNew = !compId;
+  const existing = isNew ? null : COMPETENCY_FRAMEWORK.find(c => c.id === compId);
+  let modal = document.getElementById('comp-editor-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'comp-editor-modal';
+    modal.className = 'qed-modal';
+    modal.innerHTML = '<div class="qed-box" style="max-width:1000px;"><button class="qed-close" onclick="closeCompetencyEditor()">×</button><h3 id="comp-edit-title">Competency Editor</h3><div id="comp-edit-body"></div></div>';
+    document.body.appendChild(modal);
+  }
+  document.getElementById('comp-edit-title').textContent = isNew ? '➕ Thêm năng lực mới' : '✏️ Sửa năng lực';
+  const defaultLevels = {};
+  COMPETENCY_LEVELS.forEach(l => { defaultLevels[l.key] = { criteria: '', goodExample: '', badExample: '' }; });
+  const c = existing || { id: '', name: '', nameEn: '', icon: '🎯', description: '', groupId: '', groupName: '', levels: defaultLevels };
+
+  const groupOpts = COMPETENCY_GROUPS_BASE.map(g => '<option value="' + g.id + '"' + (c.groupId === g.id ? ' selected' : '') + '>' + g.icon + ' ' + escapeHtml(g.nameVn) + '</option>').join('');
+
+  const levelInputs = COMPETENCY_LEVELS.map(l => {
+    const lvl = (c.levels || {})[l.key] || { criteria: '', goodExample: '', badExample: '' };
+    return `
+      <div style="background:var(--bg, #FAFBFC); border:1px solid var(--border); border-left:4px solid ${l.color}; border-radius:6px; padding:10px 12px; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+          <span style="font-size:18px;">${l.icon}</span>
+          <strong style="color:${l.color};">${escapeHtml(l.labelVn)}</strong>
+          <span style="font-size:11px; color:var(--text-muted);">(${escapeHtml(l.tier)} — ${escapeHtml(l.labelEn)})</span>
+        </div>
+        <label>
+          <div style="font-size:12px; font-weight:600; margin-bottom:4px;">Tiêu chí (criteria) *</div>
+          <textarea data-comp-lvl="${l.key}" data-field="criteria" rows="2" style="width:100%; padding:6px; border:1px solid var(--border); border-radius:4px; font-size:13px; resize:vertical;">${escapeHtml(lvl.criteria || '')}</textarea>
+        </label>
+        <label style="display:block; margin-top:6px;">
+          <div style="font-size:12px; font-weight:600; margin-bottom:4px; color:#15803D;">✅ Ví dụ tốt</div>
+          <textarea data-comp-lvl="${l.key}" data-field="goodExample" rows="2" style="width:100%; padding:6px; border:1px solid var(--border); border-radius:4px; font-size:13px; resize:vertical;">${escapeHtml(lvl.goodExample || '')}</textarea>
+        </label>
+        <label style="display:block; margin-top:6px;">
+          <div style="font-size:12px; font-weight:600; margin-bottom:4px; color:#B91C1C;">❌ Ví dụ chưa tốt</div>
+          <textarea data-comp-lvl="${l.key}" data-field="badExample" rows="2" style="width:100%; padding:6px; border:1px solid var(--border); border-radius:4px; font-size:13px; resize:vertical;">${escapeHtml(lvl.badExample || '')}</textarea>
+        </label>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('comp-edit-body').innerHTML = `
+    <div style="display:grid; gap:10px;">
+      <div style="display:grid; grid-template-columns: 1fr 100px 2fr 2fr; gap:8px;">
+        <label><div style="font-weight:600; font-size:13px;">ID *</div>
+          <input type="text" id="comp-id" value="${escapeHtml(c.id)}" ${!isNew ? 'disabled' : ''} placeholder="vd: motivation" style="width:100%; padding:7px; border:1px solid var(--border); border-radius:6px;"></label>
+        <label><div style="font-weight:600; font-size:13px;">Icon</div>
+          <input type="text" id="comp-icon" value="${escapeHtml(c.icon || '🎯')}" style="width:100%; padding:7px; border:1px solid var(--border); border-radius:6px; text-align:center; font-size:18px;"></label>
+        <label><div style="font-weight:600; font-size:13px;">Tên (VN) *</div>
+          <input type="text" id="comp-name" value="${escapeHtml(c.name || c.nameVn || '')}" style="width:100%; padding:7px; border:1px solid var(--border); border-radius:6px;"></label>
+        <label><div style="font-weight:600; font-size:13px;">Name (EN)</div>
+          <input type="text" id="comp-name-en" value="${escapeHtml(c.nameEn || '')}" style="width:100%; padding:7px; border:1px solid var(--border); border-radius:6px;"></label>
+      </div>
+      <label><div style="font-weight:600; font-size:13px;">Nhóm năng lực</div>
+        <select id="comp-group" style="width:100%; padding:7px; border:1px solid var(--border); border-radius:6px;">${groupOpts}</select></label>
+      <div style="margin-top:10px;">
+        <strong style="font-size:14px;">Tiêu chí + Ví dụ cho 7 cấp độ:</strong>
+        <div style="margin-top:8px;">${levelInputs}</div>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button onclick="closeCompetencyEditor()" style="padding:8px 18px; background:#F3F4F6; border:none; border-radius:6px; cursor:pointer;">Huỷ</button>
+        <button onclick='saveCompetency(${isNew ? "true" : "false"}, ${isNew ? "null" : JSON.stringify(c.id)})' style="padding:8px 18px; background:var(--primary); color:#FFF; border:none; border-radius:6px; cursor:pointer; font-weight:600;">💾 Lưu</button>
+      </div>
+    </div>
+  `;
+  modal.classList.add('show');
+}
+
+
+function closeCompetencyEditor() {
+  const modal = document.getElementById('comp-editor-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+async function saveCompetency(isNew, originalId) {
+  const id = document.getElementById('comp-id').value.trim();
+  const name = document.getElementById('comp-name').value.trim();
+  const nameEn = (document.getElementById('comp-name-en') || {}).value || '';
+  const icon = document.getElementById('comp-icon').value.trim() || '🎯';
+  const groupSelect = document.getElementById('comp-group');
+  const groupId = groupSelect ? groupSelect.value : '';
+  const groupObj = COMPETENCY_GROUPS_BASE.find(g => g.id === groupId);
+  const groupName = groupObj ? groupObj.nameVn : '';
+
+  if (!id) return alert('Vui lòng nhập ID.');
+  if (!/^[a-z0-9-]+$/.test(id)) return alert('ID chỉ chứa chữ thường, số, gạch ngang.');
+  if (!name) return alert('Vui lòng nhập tên.');
+
+  const levels = {};
+  COMPETENCY_LEVELS.forEach(l => {
+    const critEl = document.querySelector('textarea[data-comp-lvl="' + l.key + '"][data-field="criteria"]');
+    const goodEl = document.querySelector('textarea[data-comp-lvl="' + l.key + '"][data-field="goodExample"]');
+    const badEl = document.querySelector('textarea[data-comp-lvl="' + l.key + '"][data-field="badExample"]');
+    levels[l.key] = {
+      criteria: critEl ? critEl.value.trim() : '',
+      goodExample: goodEl ? goodEl.value.trim() : '',
+      badExample: badEl ? badEl.value.trim() : ''
+    };
+  });
+
+  if (!window.fb || !window.fb.db) { alert('Firebase chưa sẵn sàng.'); return; }
+
+  const data = { id, name, nameEn, icon, description: groupName, groupId, groupName, levels };
+  const action = isNew ? 'add' : 'edit';
+  const docData = { compId: id, action, data, updatedAt: window.fb.serverTimestamp() };
+
+  try {
+    const existing = _competencyOverrides[id];
+    if (existing && existing.fsId) {
+      await window.fb.updateDoc(window.fb.doc(window.fb.db, COMPETENCY_OVERRIDES_COLLECTION, existing.fsId), docData);
+      _competencyOverrides[id] = { ...docData, fsId: existing.fsId };
+    } else {
+      const ref = await window.fb.addDoc(window.fb.collection(window.fb.db, COMPETENCY_OVERRIDES_COLLECTION), docData);
+      _competencyOverrides[id] = { ...docData, fsId: ref.id };
+    }
+    applyCompetencyOverrides();
+    closeCompetencyEditor();
+    renderAdmin();
+  } catch (e) {
+    alert('Lỗi khi lưu: ' + e.message);
+  }
+}
+
+
+async function deleteCompetency(compId) {
+  if (!confirm('Xoá năng lực "' + compId + '"?')) return;
+  if (!window.fb || !window.fb.db) { alert('Firebase chưa sẵn sàng.'); return; }
+  try {
+    const existing = _competencyOverrides[compId];
+    const docData = { compId, action: 'delete', updatedAt: window.fb.serverTimestamp() };
+    if (existing && existing.fsId) {
+      await window.fb.updateDoc(window.fb.doc(window.fb.db, COMPETENCY_OVERRIDES_COLLECTION, existing.fsId), docData);
+      _competencyOverrides[compId] = { ...docData, fsId: existing.fsId };
+    } else {
+      const ref = await window.fb.addDoc(window.fb.collection(window.fb.db, COMPETENCY_OVERRIDES_COLLECTION), docData);
+      _competencyOverrides[compId] = { ...docData, fsId: ref.id };
+    }
+    applyCompetencyOverrides();
+    renderAdmin();
+  } catch (e) { alert('Lỗi: ' + e.message); }
 }
 
 // ============ COMMUNITY HUB ============
