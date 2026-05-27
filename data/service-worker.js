@@ -4,7 +4,7 @@
 //  - Firebase Firestore / Auth: network-only (always live)
 //  - Other Firebase scripts (CDN): cache-first
 
-const CACHE_VERSION = 'erp-pwa-v30';
+const CACHE_VERSION = 'erp-pwa-v31';
 const APP_SHELL = [
   './',
   './index.html',
