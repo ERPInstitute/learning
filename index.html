@@ -2616,6 +2616,14 @@
         <a onclick="showAuthView('register')">Tạo tài khoản</a> &nbsp;•&nbsp;
         <a onclick="showAuthView('forgot')">Quên mật khẩu?</a>
       </div>
+      <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--border); text-align:center;">
+        <button type="button" onclick="enterGuestMode()" style="padding:10px 18px; background:transparent; color:var(--primary); border:1px dashed var(--primary); border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">
+          👀 Xem trước với tư cách Khách
+        </button>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">
+          Xem được: Cộng đồng · Thư viện · Video · Lộ trình<br>Đăng nhập để làm bài, comment, vote
+        </div>
+      </div>
     </div>
 
     <!-- Register view -->
@@ -2838,6 +2846,7 @@
       <button class="menu-item tab-btn" data-tab="admin" data-admin-subtab="videos"><span class="icon">📺</span><span>Video manager</span></button>
       <button class="menu-item tab-btn" data-tab="admin" data-admin-subtab="library"><span class="icon">📚</span><span>Library manager</span></button>
       <button class="menu-item tab-btn" data-tab="admin" data-admin-subtab="competency"><span class="icon">🎯</span><span>Competency editor</span></button>
+      <button class="menu-item tab-btn" data-tab="admin" data-admin-subtab="guestaccess"><span class="icon">🔓</span><span>Quyền Guest</span></button>
     </div>
   </div>
 </nav>
@@ -3573,6 +3582,8 @@ async function loadState() {
         }
         // Load role (admin grant) cho dynamic admin check
         state.role = data.role || null;
+        // Load account status (active / locked / deleted) — admin có thể khoá/xoá
+        state.status = data.status || 'active';
         // Update last login
         try {
           await window.fb.updateDoc(userRef, {
@@ -5515,11 +5526,24 @@ function updateMenuActiveStates(activeTab) {
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
+    const tab = btn.dataset.tab;
+    // Guest mode: chặn tab restricted
+    if (window._isGuest && !isGuestAllowed(tab)) {
+      const tabLabel = btn.textContent.trim().replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]\s*/u, '');
+      requireLogin('Tab "' + tabLabel + '" yêu cầu đăng nhập. Hãy đăng ký miễn phí để truy cập đầy đủ.');
+      return;
+    }
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
     btn.classList.add("active");
-    const tab = btn.dataset.tab;
     document.getElementById(tab).classList.add("active");
+    // Update URL hash để share được
+    if (tab === 'community') {
+      const sub = btn.dataset.communitySubtab || window._communitySubtab || 'forum';
+      updateHashRoute(['community', sub]);
+    } else {
+      updateHashRoute(['tab', tab]);
+    }
     updateMenuActiveStates(tab);
     // Close any open dropdown
     document.querySelectorAll('.menu-group.open').forEach(g => g.classList.remove('open'));
@@ -5557,10 +5581,22 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 
 // ============ APP VERSION (kiểm soát thay đổi) ============
 const APP_VERSION = {
-  num: 'v3.9.4',
+  num: 'v3.12.0',
   date: '2026-05-27',
   notes: [
-    '🔗 MỚI: Auto-link tài khoản — khi đăng nhập Microsoft/Google bằng email đã đăng ký qua phương thức khác, hệ thống lưu pending credential, hướng dẫn user đăng nhập lại bằng phương thức cũ → tự động liên kết. Lần sau dùng được cả 2.',
+    '🔓 MỚI: Admin → "Quyền Guest" — checkbox cấu hình tab nào guest xem được, lưu vào Firestore settings/guest_access. Click 1 phát save áp dụng toàn hệ thống.',
+    '🌐 MỚI: Auto-guest mode — nếu URL có hash share (vd #article/abc) mà user chưa login → tự động vào guest mode mở đúng nội dung shared. Không bắt user login chỉ để xem 1 bài.',
+    '👀 Guest mode — nút "Xem trước với tư cách Khách" ở login screen. Guest xem được Cộng đồng / Thư viện / Video / Lộ trình / Cấp độ (read-only). Các tab khác hiện trên menu nhưng click → modal yêu cầu đăng nhập.',
+    '🔗 MỚI: URL share — mỗi bài viết / Q&A có URL riêng (vd #article/abc123). Nút 🔗 "Chia sẻ" trên card + detail → Web Share API (mobile) hoặc copy link (desktop). Người nhận click URL → mở thẳng item ngay cả khi chưa login (auto guest mode).',
+    '🔗 Tab clicks update URL hash (vd #tab/community/articles) → bookmark / share được trang chính xác.',
+    '🔒 Guest write actions (post, comment, upvote, viết bài) → modal đẹp với 2 nút Đăng nhập / Đăng ký mới.',
+    '🔒 Admin có thể KHOÁ tài khoản nghi ngờ / vi phạm — user bị khoá sẽ bị signOut ngay và không vào được nữa cho đến khi mở khoá. Status badge hiển thị trong bảng admin.',
+    '🗑️ MỚI: Admin có thể XOÁ tài khoản — confirm 2 lớp (yêu cầu gõ chính xác email), xoá progress + member_points + đánh dấu Firestore status=deleted.',
+    '⚠️ Lưu ý: xoá Firebase Auth record bản chất cần Admin SDK (Cloud Function). UI hiện tại chỉ soft-delete Firestore. Admin cần vào Firebase Console để xoá Auth record nếu muốn xoá hoàn toàn.',
+    '🐛 FIX: Bản tin "Mới nhất trong cộng đồng" giờ thực sự hiển thị TRÊN Roadmap (lần trước bị revert).',
+    '🐛 FIX: Khi auto-link Microsoft thất bại do không xác định được provider cũ (Firebase Email Enumeration Protection đang bật), hệ thống giờ hướng dẫn user thử nhiều cách: Google / Email+MK / Quên mật khẩu — thay vì chỉ nói "dùng cách khác" vô nghĩa.',
+    '🐛 FIX: Forum search bây giờ filter LIVE khi gõ (trước đây dùng onchange chỉ filter khi Enter/blur). Cache topics + tách toolbar/list theo cùng pattern Article.',
+    '🔗 Auto-link tài khoản — khi đăng nhập Microsoft/Google bằng email đã đăng ký qua phương thức khác, hệ thống lưu pending credential, hướng dẫn user đăng nhập lại bằng phương thức cũ → tự động liên kết. Lần sau dùng được cả 2.',
     '🐛 FIX: Ô tìm kiếm Bài viết không gõ được — do mỗi keystroke rebuild toàn bộ DOM khiến input mất focus. Tách render thành toolbar + list-container, search chỉ update list.',
     '🐛 FIX nghiêm trọng: Đăng nhập Microsoft báo "OAuthProvider is not a constructor" — do đã import nhưng quên expose ra window.fb. Giờ đã hoạt động.',
     '🎨 FIX: Nút Google/Microsoft trên dark mode bị blend với nền card. Đã ép nền trắng + viền + glow shadow để tương phản rõ ràng cả light + dark mode.',
@@ -5723,6 +5759,7 @@ async function initApp() {
   try { await loadVideoOverrides(); } catch (e) {}
   try { await loadLibraryOverrides(); } catch (e) {}
   try { await loadCompetencyOverrides(); } catch (e) {}
+  try { await loadGuestConfig(); } catch (e) {}
   renderQuiz();
   renderMergedCases();
   renderGotchas();
@@ -5745,6 +5782,26 @@ async function handleAuthStateChange(user) {
   const userMenu = document.getElementById('user-menu');
 
   if (!user) {
+    // Nếu đang trong guest mode → KHÔNG che app, để guest xem các tab cho phép
+    if (window._isGuest) {
+      overlay.style.display = 'none';
+      header.classList.remove('app-hidden');
+      nav.classList.remove('app-hidden');
+      main.classList.remove('app-hidden');
+      userMenu.style.display = 'block';
+      document.getElementById('user-name').textContent = 'Khách';
+      document.getElementById('user-email').textContent = 'Chưa đăng nhập';
+      const avatar = document.getElementById('user-avatar');
+      if (avatar) avatar.innerHTML = '👤';
+      return;
+    }
+    // AUTO-GUEST: nếu URL có hash (vd shared link #article/abc), tự động vào guest mode
+    // để user xem được nội dung mà không bị block login wall
+    if (window.location.hash && window.location.hash.length > 1) {
+      console.log('[guest-auto] Detected hash:', window.location.hash, '→ entering guest mode');
+      enterGuestMode();
+      return;
+    }
     overlay.style.display = 'flex';
     header.classList.add('app-hidden');
     nav.classList.add('app-hidden');
@@ -5753,6 +5810,8 @@ async function handleAuthStateChange(user) {
     showAuthView('login');
     return;
   }
+  // User đăng nhập → tắt guest mode
+  window._isGuest = false;
 
   // Check email verification (OAuth providers — Google/Microsoft — bypass này vì IdP đã verify email)
   const isOAuthVerified = user.providerData.some(p => p.providerId === 'google.com' || p.providerId === 'microsoft.com');
@@ -5793,6 +5852,16 @@ async function handleAuthStateChange(user) {
   if (adminGroup) adminGroup.style.display = 'none';
 
   await initApp();
+
+  // Check account status — nếu admin đã khoá/xoá account này, signOut ngay
+  if (state.status === 'locked' || state.status === 'deleted') {
+    const reason = state.status === 'locked'
+      ? '🔒 Tài khoản của bạn đã bị admin tạm khoá.\n\nNếu cho rằng đây là nhầm lẫn, vui lòng liên hệ admin.'
+      : '🗑️ Tài khoản của bạn đã bị xoá khỏi hệ thống.\n\nNếu cần khôi phục, vui lòng liên hệ admin.';
+    alert(reason);
+    try { await window.fb.signOut(window.fb.auth); } catch (e) {}
+    return;
+  }
 
   // Sau khi initApp() đã load state.role từ Firestore, check lại isAdmin (cả super-admin và dynamic admin)
   if (isAdmin(user.email)) {
@@ -5874,27 +5943,45 @@ async function handleAccountExistsError(error, attemptedProviderName) {
   window._pendingLinkCred = pendingCred;
   window._pendingLinkEmail = email;
 
-  // Tìm provider đã có cho email này
+  // Tìm provider đã có cho email này (có thể trả về [] nếu Firebase bật Email Enumeration Protection)
+  let methods = [];
   try {
-    const methods = await window.fb.fetchSignInMethodsForEmail(window.fb.auth, email);
-    let existing = 'phương thức khác';
-    if (methods.includes('google.com')) existing = 'Google';
-    else if (methods.includes('microsoft.com')) existing = 'Microsoft';
-    else if (methods.includes('password')) existing = 'Email + Mật khẩu';
-    const msg =
+    methods = await window.fb.fetchSignInMethodsForEmail(window.fb.auth, email);
+  } catch (e) {
+    console.warn('fetchSignInMethodsForEmail failed:', e.message);
+  }
+
+  // Map methods → tên thân thiện
+  let existing = '';
+  if (methods.includes('google.com')) existing = 'Google';
+  else if (methods.includes('microsoft.com')) existing = 'Microsoft';
+  else if (methods.includes('password')) existing = 'Email + Mật khẩu';
+
+  // Auto-fill email
+  const loginEmailInput = document.getElementById('login-email');
+  if (loginEmailInput) loginEmailInput.value = email;
+
+  let msg;
+  if (existing) {
+    msg =
       '⚠️ Email ' + email + ' đã được đăng ký qua ' + existing + '.\n\n' +
       '👉 Vui lòng đăng nhập bằng ' + existing + ' trước.\n' +
-      'Sau khi đăng nhập, tài khoản ' + attemptedProviderName + ' của bạn sẽ TỰ ĐỘNG được liên kết.\n\n' +
+      'Sau khi đăng nhập, tài khoản ' + attemptedProviderName + ' sẽ TỰ ĐỘNG được liên kết.\n\n' +
       'Lần sau bạn có thể đăng nhập bằng cả 2 phương thức.';
-    alert(msg);
-    const loginEmailInput = document.getElementById('login-email');
-    if (loginEmailInput) loginEmailInput.value = email;
     errEl.textContent = '⏳ Đăng nhập bằng ' + existing + ' để liên kết với ' + attemptedProviderName + '.';
-    errEl.classList.add('show');
-  } catch (e) {
-    errEl.textContent = 'Email đã đăng ký bằng phương thức khác. Vui lòng dùng cách đó để đăng nhập.';
-    errEl.classList.add('show');
+  } else {
+    // Không xác định được method (do Email Enumeration Protection hoặc account ghost)
+    msg =
+      '⚠️ Email ' + email + ' đã tồn tại trong hệ thống nhưng đăng ký qua phương thức khác.\n\n' +
+      '👉 HÃY THỬ MỘT TRONG CÁC CÁCH SAU (cách nào đăng nhập được sẽ TỰ ĐỘNG liên kết ' + attemptedProviderName + '):\n\n' +
+      '1️⃣  Đăng nhập bằng Google (nếu bạn từng dùng Gmail)\n' +
+      '2️⃣  Đăng nhập bằng Email + Mật khẩu\n' +
+      '3️⃣  Nếu quên mật khẩu → click "Quên mật khẩu" để đặt lại\n\n' +
+      'Nếu vẫn không vào được → liên hệ admin để xóa account cũ.';
+    errEl.textContent = '⏳ Thử đăng nhập bằng Google / Email+MK để liên kết ' + attemptedProviderName + '. Hoặc dùng "Quên mật khẩu".';
   }
+  alert(msg);
+  errEl.classList.add('show');
 }
 
 // Sau khi user đăng nhập thành công bằng provider cũ, link credential mới
@@ -5997,6 +6084,227 @@ async function loginMicrosoft() {
     errEl.classList.add('show');
   }
 }
+
+// ============ GUEST MODE ============
+// Danh sách TẤT CẢ tab có thể toggle cho guest (admin chọn qua UI)
+const GUEST_TAB_OPTIONS = [
+  { key: 'roadmap',       label: '🗺️ Lộ trình học',          group: 'Học' },
+  { key: 'quiz',          label: '📝 Trắc nghiệm',             group: 'Học' },
+  { key: 'srs',           label: '🔁 Ôn tập SRS',              group: 'Học' },
+  { key: 'mock',          label: '🎯 Thi thử',                 group: 'Học' },
+  { key: 'cert',          label: '📜 Cert Exam',               group: 'Học' },
+  { key: 'cases',         label: '💼 Tình huống & Nâng cao',   group: 'Tài liệu' },
+  { key: 'gotchas',       label: '⚠️ Gotchas',                 group: 'Tài liệu' },
+  { key: 'workshop',      label: '📋 Workshop',                group: 'Tài liệu' },
+  { key: 'retail',        label: '🏪 Retail',                  group: 'Tài liệu' },
+  { key: 'manufacturing', label: '🏭 Manufacturing',           group: 'Tài liệu' },
+  { key: 'accounting',    label: '📊 Kế toán',                 group: 'Tài liệu' },
+  { key: 'playbook',      label: '💎 Cẩm nang triển khai',     group: 'Tài liệu' },
+  { key: 'videos',        label: '📺 Video Demo',              group: 'Tài liệu' },
+  { key: 'library',       label: '📚 Thư viện tài liệu',       group: 'Tài liệu' },
+  { key: 'glossary',      label: '📖 Thuật ngữ',               group: 'Tài liệu' },
+  { key: 'community',     label: '🌐 Cộng đồng',               group: 'Cộng đồng' },
+  { key: 'leaderboard',   label: '📊 Top học viên',            group: 'Cộng đồng' },
+  { key: 'bookmarks',     label: '📌 Bookmarks',               group: 'Cá nhân' },
+  { key: 'stats',         label: '📊 Tiến độ',                 group: 'Cá nhân' },
+  { key: 'level',         label: '🎓 Cấp độ Consultant',       group: 'Cá nhân' }
+];
+
+// Default (dùng khi chưa load được Firestore config)
+const GUEST_ALLOWED_TABS_DEFAULT = ['community', 'glossary', 'library', 'videos', 'roadmap', 'level'];
+window._guestConfig = { allowedTabs: GUEST_ALLOWED_TABS_DEFAULT.slice() };
+
+async function loadGuestConfig() {
+  if (!window.fb) return;
+  try {
+    const snap = await window.fb.getDoc(window.fb.doc(window.fb.db, 'settings', 'guest_access'));
+    if (snap.exists()) {
+      const data = snap.data();
+      if (Array.isArray(data.allowedTabs)) {
+        window._guestConfig.allowedTabs = data.allowedTabs;
+      }
+    }
+  } catch (e) { /* silent fail — dùng default */ }
+}
+
+function isGuestAllowed(tab) {
+  return (window._guestConfig.allowedTabs || GUEST_ALLOWED_TABS_DEFAULT).includes(tab);
+}
+
+function enterGuestMode() {
+  window._isGuest = true;
+  const overlay = document.getElementById('auth-overlay');
+  if (overlay) overlay.style.display = 'none';
+  document.querySelector('header').classList.remove('app-hidden');
+  document.querySelector('nav.menu-bar').classList.remove('app-hidden');
+  document.querySelector('main').classList.remove('app-hidden');
+  document.getElementById('user-menu').style.display = 'block';
+  document.getElementById('user-name').textContent = 'Khách';
+  document.getElementById('user-email').textContent = 'Chưa đăng nhập';
+  const avatar = document.getElementById('user-avatar');
+  if (avatar) avatar.innerHTML = '👤';
+  // Ẩn admin group
+  const adminGroup = document.getElementById('sidebar-admin-group');
+  if (adminGroup) adminGroup.style.display = 'none';
+  // Khởi tạo app cho guest (không load Firestore user doc — không có)
+  try { initAppForGuest(); } catch (e) { console.warn(e); }
+  // Apply hash route nếu có
+  setTimeout(() => applyHashRoute(), 50);
+}
+
+async function initAppForGuest() {
+  // Apply theme
+  applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+  // Load guest config (which tabs allowed)
+  await loadGuestConfig();
+  // Merge data
+  mergeRetailQuestions();
+  mergeManufacturingQuestions();
+  mergeAccountingQuestions();
+  // Load public overrides
+  try { await loadQuestionOverrides(); } catch (e) {}
+  try { await loadPlaybookOverrides(); } catch (e) {}
+  try { await loadVideoOverrides(); } catch (e) {}
+  try { await loadLibraryOverrides(); } catch (e) {}
+  // Render
+  renderQuiz();
+  renderMergedCases();
+  renderGotchas();
+  renderWorkshop();
+  // Default tab = level (roadmap public)
+  try { renderLevelAssessment(); } catch (e) {}
+}
+
+// Yêu cầu đăng nhập — hiển thị modal khi guest cố thao tác bị restricted
+function requireLogin(message) {
+  const msg = message || 'Vui lòng đăng nhập để tiếp tục.';
+  if (!window._isGuest) return true; // đã login OK
+  showLoginPromptModal(msg);
+  return false;
+}
+
+function showLoginPromptModal(msg) {
+  let modal = document.getElementById('guest-login-prompt-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'guest-login-prompt-modal';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '<div style="background:var(--card); border-radius:14px; padding:28px 24px; max-width:420px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.4);">' +
+    '<div style="font-size:48px; margin-bottom:10px;">🔒</div>' +
+    '<h2 style="margin:0 0 8px 0; color:var(--primary); font-size:20px;">Cần đăng nhập</h2>' +
+    '<p style="color:var(--text-muted); font-size:14px; margin:0 0 20px 0; line-height:1.5;">' + escapeHtml(msg) + '</p>' +
+    '<div style="display:flex; gap:8px; flex-direction:column;">' +
+      '<button onclick="closeLoginPromptModal(); promptLoginNow(\'login\')" style="padding:11px; background:var(--primary); color:#FFF; border:none; border-radius:8px; cursor:pointer; font-weight:700;">🔑 Đăng nhập</button>' +
+      '<button onclick="closeLoginPromptModal(); promptLoginNow(\'register\')" style="padding:11px; background:transparent; color:var(--primary); border:1.5px solid var(--primary); border-radius:8px; cursor:pointer; font-weight:600;">✨ Đăng ký mới</button>' +
+      '<button onclick="closeLoginPromptModal()" style="padding:9px; background:transparent; color:var(--text-muted); border:none; cursor:pointer; font-size:13px;">Để sau</button>' +
+    '</div>' +
+  '</div>';
+  modal.style.display = 'flex';
+}
+
+function closeLoginPromptModal() {
+  const modal = document.getElementById('guest-login-prompt-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function promptLoginNow(view) {
+  window._isGuest = false;
+  document.getElementById('auth-overlay').style.display = 'flex';
+  document.querySelector('header').classList.add('app-hidden');
+  document.querySelector('nav.menu-bar').classList.add('app-hidden');
+  document.querySelector('main').classList.add('app-hidden');
+  document.getElementById('user-menu').style.display = 'none';
+  showAuthView(view || 'login');
+}
+
+// ============ URL HASH ROUTING (cho share link) ============
+// Hash format: #tab/<name>  |  #community/<sub>  |  #article/<id>  |  #forum/<id>  |  #case/<id>
+function updateHashRoute(parts) {
+  // parts = ['article', 'abc123'] → window.location.hash = '#article/abc123'
+  const hash = '#' + parts.filter(Boolean).join('/');
+  if (window.location.hash !== hash) {
+    history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+  }
+}
+
+function applyHashRoute() {
+  const h = (window.location.hash || '').replace(/^#/, '');
+  if (!h) return;
+  const parts = h.split('/').filter(Boolean);
+  const [type, id, sub] = parts;
+  if (!type) return;
+  if (type === 'article' && id) {
+    window._currentArticleId = id;
+    _currentArticleId = id;
+    window._communitySubtab = 'articles';
+    const btn = document.querySelector('[data-tab="community"][data-community-subtab="articles"]')
+             || document.querySelector('[data-tab="community"]');
+    if (btn) btn.click();
+  } else if (type === 'forum' && id) {
+    _forumCurrentTopicId = id;
+    window._communitySubtab = 'forum';
+    const btn = document.querySelector('[data-tab="community"][data-community-subtab="forum"]')
+             || document.querySelector('[data-tab="community"]');
+    if (btn) btn.click();
+  } else if (type === 'community' && id) {
+    window._communitySubtab = id;
+    const btn = document.querySelector('[data-tab="community"][data-community-subtab="' + id + '"]')
+             || document.querySelector('[data-tab="community"]');
+    if (btn) btn.click();
+  } else if (type === 'tab' && id) {
+    const btn = document.querySelector('[data-tab="' + id + '"]');
+    if (btn) btn.click();
+  }
+}
+
+// ============ SHARE BUTTON ============
+async function shareLink(type, id, title) {
+  // type: 'article' / 'forum' / 'case' / 'tab'  | id: doc ID hoặc tab name
+  const base = window.location.origin + window.location.pathname;
+  const url = base + '#' + type + '/' + id;
+  const shareData = {
+    title: title || 'HỌC VIỆN ERP CONSULTING',
+    text: title ? ('Đọc bài: ' + title) : 'Xem nội dung trên HỌC VIỆN ERP',
+    url
+  };
+  // Web Share API (mobile)
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+      return;
+    } catch (e) { /* user cancelled or unsupported, fallback */ }
+  }
+  // Fallback: copy to clipboard
+  try {
+    await navigator.clipboard.writeText(url);
+    showShareToast('✓ Đã copy link! Dán (Ctrl+V) để chia sẻ.');
+  } catch (e) {
+    // Final fallback: prompt
+    prompt('Copy link để chia sẻ:', url);
+  }
+}
+
+function showShareToast(msg) {
+  let toast = document.getElementById('share-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'share-toast';
+    toast.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#16A34A; color:#FFF; padding:12px 22px; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.3); z-index:10000; font-weight:700; transition:opacity 0.3s; max-width:90vw;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.display = 'block';
+  clearTimeout(window._shareToastTimer);
+  window._shareToastTimer = setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.style.display = 'none', 300); }, 2500);
+}
+
+// Listen for hash changes (back/forward navigation)
+window.addEventListener('hashchange', () => { applyHashRoute(); });
+// Initial route apply (sau khi DOM + app sẵn sàng)
+window.addEventListener('load', () => { setTimeout(() => applyHashRoute(), 300); });
 
 async function forgotPassword(event) {
   event.preventDefault();
@@ -6287,6 +6595,7 @@ async function renderAdmin() {
         <button class="admin-subtab ${activeSubtab === 'videos' ? 'active' : ''}" onclick="setAdminSubtab('videos')">📺 Video manager (edit + tracking)</button>
         <button class="admin-subtab ${activeSubtab === 'library' ? 'active' : ''}" onclick="setAdminSubtab('library')">📚 Library manager (tài liệu)</button>
         <button class="admin-subtab ${activeSubtab === 'competency' ? 'active' : ''}" onclick="setAdminSubtab('competency')">🎯 Competency editor</button>
+        <button class="admin-subtab ${activeSubtab === 'guestaccess' ? 'active' : ''}" onclick="setAdminSubtab('guestaccess')">🔓 Quyền Guest</button>
       </div>
 
       ${activeSubtab === 'heatmap' ? renderDifficultyHeatmap(users) :
@@ -6296,7 +6605,8 @@ async function renderAdmin() {
         activeSubtab === 'certsessions' ? '<div id="certadmin-root">⏳ Đang tải Cert Exam admin...</div>' :
         activeSubtab === 'videos' ? renderVideoTrackingAdmin(users) :
         activeSubtab === 'library' ? renderLibraryAdmin(users) :
-        activeSubtab === 'competency' ? renderCompetencyAdmin(users) : `
+        activeSubtab === 'competency' ? renderCompetencyAdmin(users) :
+        activeSubtab === 'guestaccess' ? renderGuestAccessAdmin() : `
         <div class="admin-controls">
           <input type="search" id="admin-search" placeholder="🔍 Tìm theo email hoặc tên..." />
           <button onclick="exportUsersCSV()">📊 Export CSV</button>
@@ -6376,14 +6686,22 @@ function renderAdminTableBody(users) {
     const isSelf = me && me.uid === u.uid;
     const scoreClass = answered === 0 ? 'none' : (pct >= 70 ? 'good' : pct >= 50 ? 'mid' : 'low');
 
+    const userStatus = u.status || 'active';
+    const isLocked = userStatus === 'locked';
+    const isDeleted = userStatus === 'deleted';
+    const statusBadge = isLocked
+      ? '<span class="role-badge" style="background:#FEE2E2; color:#B91C1C;">🔒 Locked</span>'
+      : isDeleted ? '<span class="role-badge" style="background:#F3F4F6; color:#6B7280;">🗑️ Deleted</span>' : '';
+
     return `
-      <tr>
+      <tr style="${isLocked || isDeleted ? 'opacity:0.6;' : ''}">
         <td>
           <div style="display:flex; align-items:center; gap:10px;">
             <div class="admin-avatar">${(u.displayName || u.email || '?').charAt(0).toUpperCase()}</div>
             <div>
               <div style="font-weight:600;">${escapeHtml(u.displayName || '(no name)')}</div>
               ${isSuper ? '<span class="role-badge">Super-Admin</span>' : (isAdmin ? '<span class="role-badge">Admin</span>' : '')}
+              ${statusBadge}
             </div>
           </div>
         </td>
@@ -6397,7 +6715,9 @@ function renderAdminTableBody(users) {
         </td>
         <td style="white-space:nowrap;">
           <button class="action-btn" onclick="showUserDetail('${u.uid}')">📊 Chi tiết</button>
-          ${!isSuper ? `<button class="action-btn danger" onclick="resetUserProgress('${u.uid}', '${escapeHtml(u.email || '')}')">🗑️ Reset</button>` : ''}
+          ${!isSuper && !isSelf ? `<button class="action-btn ${isLocked ? '' : 'danger'}" onclick="toggleUserLock('${u.uid}', '${escapeHtml(u.email || '')}', ${isLocked})">${isLocked ? '🔓 Mở khoá' : '🔒 Khoá'}</button>` : ''}
+          ${!isSuper ? `<button class="action-btn danger" onclick="resetUserProgress('${u.uid}', '${escapeHtml(u.email || '')}')">♻️ Reset</button>` : ''}
+          ${!isSuper && !isSelf ? `<button class="action-btn danger" onclick="deleteUserAccount('${u.uid}', '${escapeHtml(u.email || '')}')">🗑️ Xoá</button>` : ''}
           ${canManageRoles && !isSelf && !isSuper ? `<button class="action-btn" onclick="toggleAdminRole('${u.uid}', '${escapeHtml(u.email || '')}', ${u.role === 'admin'})">${u.role === 'admin' ? '⬇️ Gỡ admin' : '⬆️ Cấp admin'}</button>` : ''}
         </td>
       </tr>
@@ -6624,6 +6944,67 @@ async function resetUserProgress(uid, email) {
       }
     });
     alert('✓ Đã reset tiến độ của ' + email);
+    renderAdmin();
+  } catch (e) {
+    alert('Lỗi: ' + e.message);
+  }
+}
+
+// Khoá / mở khoá account — user bị khoá sẽ bị signOut ngay lần load tiếp theo
+async function toggleUserLock(uid, email, currentlyLocked) {
+  const me = window.fb && window.fb.auth && window.fb.auth.currentUser;
+  if (!isAdmin(me && me.email)) {
+    alert('Chỉ admin mới được khoá/mở khoá account.');
+    return;
+  }
+  const action = currentlyLocked ? '🔓 MỞ KHOÁ account của' : '🔒 KHOÁ account của';
+  const consequence = currentlyLocked
+    ? 'User này sẽ đăng nhập được trở lại bình thường.'
+    : 'User này sẽ bị BUỘC ĐĂNG XUẤT ngay lần load tiếp theo và KHÔNG đăng nhập được nữa cho đến khi mở khoá.\n\n(Lưu ý: tài khoản Firebase Auth vẫn tồn tại — chỉ Firestore status đổi thành "locked")';
+  if (!confirm(action + '\n' + email + '?\n\n' + consequence)) return;
+  try {
+    await window.fb.updateDoc(window.fb.doc(window.fb.db, 'users', uid), {
+      status: currentlyLocked ? 'active' : 'locked',
+      statusChangedAt: window.fb.serverTimestamp(),
+      statusChangedBy: (me && me.email) || ''
+    });
+    alert('✓ Đã ' + (currentlyLocked ? 'mở khoá' : 'khoá') + ' account ' + email);
+    renderAdmin();
+  } catch (e) {
+    alert('Lỗi: ' + e.message + '\n\nKiểm tra Firestore Rules có cho admin update field "status" không.');
+  }
+}
+
+// Xoá account — soft delete: đánh dấu deleted + xoá progress + xoá member_points
+// Firebase Auth user record VẪN tồn tại (cần Admin SDK / Cloud Function để xoá hẳn)
+async function deleteUserAccount(uid, email) {
+  const me = window.fb && window.fb.auth && window.fb.auth.currentUser;
+  if (!isAdmin(me && me.email)) {
+    alert('Chỉ admin mới được xoá account.');
+    return;
+  }
+  if (me.uid === uid) {
+    alert('Không thể tự xoá chính mình từ trang admin.');
+    return;
+  }
+  const confirm1 = confirm('⚠️ XOÁ ACCOUNT của ' + email + '?\n\nUser sẽ:\n• Bị buộc đăng xuất ngay\n• KHÔNG đăng nhập được nữa\n• Mất toàn bộ tiến độ học, điểm, bookmark\n• Bài viết / Q&A / Case của user vẫn còn (gán ẩn danh)\n\nHành động này KHÔNG thể undo.');
+  if (!confirm1) return;
+  const confirm2 = prompt('Để xác nhận, hãy gõ chính xác email của user cần xoá:');
+  if (confirm2 !== email) {
+    alert('Email không khớp. Đã huỷ.');
+    return;
+  }
+  try {
+    // 1. Mark Firestore user doc as deleted (giữ doc để track audit, không xoá hẳn)
+    await window.fb.updateDoc(window.fb.doc(window.fb.db, 'users', uid), {
+      status: 'deleted',
+      statusChangedAt: window.fb.serverTimestamp(),
+      statusChangedBy: (me && me.email) || '',
+      progress: { answered: {}, bookmarks: {} }
+    });
+    // 2. Xoá member_points doc (silent fail OK)
+    try { await window.fb.deleteDoc(window.fb.doc(window.fb.db, POINTS_COLLECTION, uid)); } catch (e) {}
+    alert('✓ Đã xoá account ' + email + '.\n\n⚠️ Lưu ý: Firebase Authentication record vẫn còn (không xoá được từ client). Để xoá hoàn toàn, vào Firebase Console → Authentication → Users → tìm email → Delete.');
     renderAdmin();
   } catch (e) {
     alert('Lỗi: ' + e.message);
@@ -12406,6 +12787,74 @@ function renderCompetencyItem(c) {
 
 
 // ============ COMPETENCY ADMIN EDITOR ============
+// ============ ADMIN: GUEST ACCESS CONFIG ============
+function renderGuestAccessAdmin() {
+  const current = window._guestConfig.allowedTabs || GUEST_ALLOWED_TABS_DEFAULT;
+  // Group options by category
+  const groups = {};
+  GUEST_TAB_OPTIONS.forEach(t => {
+    if (!groups[t.group]) groups[t.group] = [];
+    groups[t.group].push(t);
+  });
+  return `
+    <div style="background:var(--card); padding:18px; border-radius:10px; border:1px solid var(--border);">
+      <h3 style="margin:0 0 8px 0;">🔓 Cấu hình quyền truy cập của Khách (Guest)</h3>
+      <p style="color:var(--text-muted); font-size:13px; line-height:1.6; margin:0 0 16px 0;">
+        Tích các tab mà người chưa đăng nhập ("Khách") được phép xem. Tab không tích → menu vẫn hiển thị nhưng click sẽ hiện modal yêu cầu đăng ký.<br>
+        <strong style="color:var(--warning);">⚠️ Lưu ý:</strong> Mọi write action (post, comment, upvote, viết bài) luôn yêu cầu đăng nhập, không thể bật cho guest.
+      </p>
+      ${Object.entries(groups).map(([groupName, opts]) => `
+        <div style="margin-bottom:14px;">
+          <div style="font-weight:700; color:var(--primary); margin-bottom:8px; font-size:13px; text-transform:uppercase; letter-spacing:0.5px;">${escapeHtml(groupName)}</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:8px;">
+            ${opts.map(opt => `
+              <label style="display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--bg); border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:13px;">
+                <input type="checkbox" class="ga-check" data-tab="${opt.key}" ${current.includes(opt.key) ? 'checked' : ''} style="cursor:pointer;">
+                <span>${escapeHtml(opt.label)}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+      <div style="display:flex; gap:10px; margin-top:18px; padding-top:14px; border-top:1px solid var(--border);">
+        <button onclick="saveGuestConfig()" style="padding:10px 20px; background:var(--primary); color:#FFF; border:none; border-radius:6px; cursor:pointer; font-weight:700;">💾 Lưu cấu hình</button>
+        <button onclick="resetGuestConfigDefault()" style="padding:10px 16px; background:transparent; color:var(--text-muted); border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:13px;">↻ Khôi phục mặc định</button>
+        <div style="margin-left:auto; font-size:12px; color:var(--text-muted); align-self:center;">
+          Hiện tại: <strong>${current.length}</strong> / ${GUEST_TAB_OPTIONS.length} tab được mở
+        </div>
+      </div>
+      <div style="margin-top:14px; padding:10px 14px; background:rgba(46,92,158,0.06); border-left:3px solid var(--primary); border-radius:6px; font-size:12px; color:var(--text-muted);">
+        💡 <strong>Tip:</strong> Sau khi save, mở incognito tab + paste URL share để test trải nghiệm guest. Hoặc logout + click "Xem trước với tư cách Khách".
+      </div>
+    </div>
+  `;
+}
+
+async function saveGuestConfig() {
+  const me = window.fb && window.fb.auth && window.fb.auth.currentUser;
+  if (!isAdmin(me && me.email)) return alert('Chỉ admin được sửa cấu hình.');
+  const checked = Array.from(document.querySelectorAll('.ga-check'))
+    .filter(c => c.checked).map(c => c.dataset.tab);
+  try {
+    await window.fb.setDoc(
+      window.fb.doc(window.fb.db, 'settings', 'guest_access'),
+      { allowedTabs: checked, updatedAt: window.fb.serverTimestamp(), updatedBy: (me && me.email) || '' },
+      { merge: true }
+    );
+    window._guestConfig.allowedTabs = checked;
+    alert('✓ Đã lưu! Guest sẽ thấy ' + checked.length + ' tab. (Cần refresh browser để áp dụng cho user hiện tại đang là guest.)');
+  } catch (e) {
+    alert('Lỗi lưu: ' + e.message + '\n\nKiểm tra Firestore Rules có cho admin write /settings/guest_access không.');
+  }
+}
+
+function resetGuestConfigDefault() {
+  if (!confirm('Khôi phục danh sách tab guest về MẶC ĐỊNH (Cộng đồng, Thư viện, Video, Lộ trình, Cấp độ, Thuật ngữ)?')) return;
+  document.querySelectorAll('.ga-check').forEach(c => {
+    c.checked = GUEST_ALLOWED_TABS_DEFAULT.includes(c.dataset.tab);
+  });
+}
+
 function renderCompetencyAdmin(users) {
   return `
     <div style="background:var(--card); padding:14px; border-radius:10px; border:1px solid var(--border); margin-bottom:14px;">
@@ -12718,6 +13167,35 @@ async function renderForum() {
 function renderForumList(allTopics) {
   const root = document.getElementById('community-content');
   if (!root) return;
+  // Cache topics để renderForumListBody dùng (tránh re-fetch mỗi keystroke)
+  window._forumTopicsCache = allTopics;
+  const catOpts = COMMUNITY_CATEGORIES.map(c => '<option value="' + c.key + '"' + (_forumFilter.category === c.key ? ' selected' : '') + '>' + c.icon + ' ' + escapeHtml(c.label) + '</option>').join('');
+  // Toolbar render 1 lần — search dùng oninput, KHÔNG re-fetch (chỉ filter cache)
+  root.innerHTML = `
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center;">
+      <input type="search" id="forum-search-input" placeholder="🔍 Tìm câu hỏi..." value="${escapeHtml(_forumFilter.search)}" oninput="_forumFilter.search=this.value; renderForumListBody()" style="flex:1; min-width:200px; padding:8px 10px; border:1px solid var(--border); border-radius:6px;">
+      <select onchange="_forumFilter.category=this.value; renderForumListBody()" style="padding:8px; border:1px solid var(--border); border-radius:6px;">
+        <option value="">Tất cả category</option>${catOpts}
+      </select>
+      <select onchange="_forumFilter.sort=this.value; renderForumListBody()" style="padding:8px; border:1px solid var(--border); border-radius:6px;">
+        <option value="newest" ${_forumFilter.sort === 'newest' ? 'selected' : ''}>Mới nhất</option>
+        <option value="popular" ${_forumFilter.sort === 'popular' ? 'selected' : ''}>Nhiều vote</option>
+        <option value="unanswered" ${_forumFilter.sort === 'unanswered' ? 'selected' : ''}>Chưa có reply</option>
+      </select>
+      <label style="display:flex; align-items:center; gap:4px; font-size:12px;">
+        <input type="checkbox" ${_forumFilter.resolvedOnly ? 'checked' : ''} onchange="_forumFilter.resolvedOnly=this.checked; renderForumListBody()"> Đã giải đáp
+      </label>
+      <button onclick="openNewTopicModal()" style="padding:8px 16px; background:var(--primary); color:#FFF; border:none; border-radius:6px; cursor:pointer; font-weight:600;">➕ Đặt câu hỏi</button>
+    </div>
+    <div id="forum-list-container"></div>
+  `;
+  renderForumListBody();
+}
+
+function renderForumListBody() {
+  const container = document.getElementById('forum-list-container');
+  if (!container) return;
+  const allTopics = window._forumTopicsCache || [];
   let topics = allTopics.slice();
   if (_forumFilter.category) topics = topics.filter(t => t.category === _forumFilter.category);
   if (_forumFilter.resolvedOnly) topics = topics.filter(t => t.isResolved);
@@ -12729,31 +13207,12 @@ function renderForumList(allTopics) {
   else if (_forumFilter.sort === 'popular') topics.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
   else if (_forumFilter.sort === 'unanswered') topics.sort((a, b) => (a.replyCount || 0) - (b.replyCount || 0));
   topics.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
-  const catOpts = COMMUNITY_CATEGORIES.map(c => '<option value="' + c.key + '"' + (_forumFilter.category === c.key ? ' selected' : '') + '>' + c.icon + ' ' + escapeHtml(c.label) + '</option>').join('');
-  root.innerHTML = `
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center;">
-      <input type="search" placeholder="🔍 Tìm câu hỏi..." value="${escapeHtml(_forumFilter.search)}" onchange="_forumFilter.search=this.value; renderForum()" style="flex:1; min-width:200px; padding:8px 10px; border:1px solid var(--border); border-radius:6px;">
-      <select onchange="_forumFilter.category=this.value; renderForum()" style="padding:8px; border:1px solid var(--border); border-radius:6px;">
-        <option value="">Tất cả category</option>${catOpts}
-      </select>
-      <select onchange="_forumFilter.sort=this.value; renderForum()" style="padding:8px; border:1px solid var(--border); border-radius:6px;">
-        <option value="newest" ${_forumFilter.sort === 'newest' ? 'selected' : ''}>Mới nhất</option>
-        <option value="popular" ${_forumFilter.sort === 'popular' ? 'selected' : ''}>Nhiều vote</option>
-        <option value="unanswered" ${_forumFilter.sort === 'unanswered' ? 'selected' : ''}>Chưa có reply</option>
-      </select>
-      <label style="display:flex; align-items:center; gap:4px; font-size:12px;">
-        <input type="checkbox" ${_forumFilter.resolvedOnly ? 'checked' : ''} onchange="_forumFilter.resolvedOnly=this.checked; renderForum()"> Đã giải đáp
-      </label>
-      <button onclick="openNewTopicModal()" style="padding:8px 16px; background:var(--primary); color:#FFF; border:none; border-radius:6px; cursor:pointer; font-weight:600;">➕ Đặt câu hỏi</button>
-    </div>
-    ${topics.length === 0 ? `
-      <div style="background:var(--card); padding:40px; border-radius:10px; text-align:center; border:2px dashed var(--border);">
+  container.innerHTML = topics.length === 0
+    ? `<div style="background:var(--card); padding:40px; border-radius:10px; text-align:center; border:2px dashed var(--border);">
         <div style="font-size:48px;">💬</div>
-        <h3 style="margin:10px 0;">Chưa có câu hỏi nào</h3>
-        <p style="color:var(--text-muted);">Hãy đặt câu hỏi đầu tiên cho cộng đồng!</p>
-      </div>
-    ` : '<div style="display:flex; flex-direction:column; gap:8px;">' + topics.map(t => renderForumTopicCard(t)).join('') + '</div>'}
-  `;
+        <h3 style="margin:10px 0;">Không có câu hỏi phù hợp</h3>
+      </div>`
+    : '<div style="display:flex; flex-direction:column; gap:8px;">' + topics.map(t => renderForumTopicCard(t)).join('') + '</div>';
 }
 
 function renderForumTopicCard(t) {
@@ -14897,7 +15356,8 @@ function renderArticleCard(a, isAdminUser) {
   const date = a.createdAt && a.createdAt.toMillis ? new Date(a.createdAt.toMillis()).toLocaleDateString('vi-VN') : '';
   return '<div class="art-card ' + (a.featured ? 'featured ' : '') + (a.status === 'hidden' ? 'hidden' : '') + '" onclick="openArticleDetail(\'' + a.id + '\')">' +
     (a.featured ? '<div class="art-featured-badge">⭐ FEATURED</div>' : '') +
-    '<h3>' + escapeHtml(a.title || '(không tiêu đề)') + (a.status === 'hidden' ? ' <span style="font-size:11px; color:var(--danger);">[ẨN]</span>' : '') + '</h3>' +
+    '<button onclick="event.stopPropagation(); shareLink(\'article\', \'' + a.id + '\', ' + JSON.stringify(a.title || '') + ')" title="Chia sẻ" style="position:absolute; top:10px; right:10px; background:transparent; border:none; cursor:pointer; font-size:15px; padding:4px 8px; border-radius:4px; color:var(--text-muted);" onmouseover="this.style.background=\'var(--sidebar-hover)\'; this.style.color=\'var(--primary)\'" onmouseout="this.style.background=\'transparent\'; this.style.color=\'var(--text-muted)\'">🔗</button>' +
+    '<h3 style="padding-right:32px;">' + escapeHtml(a.title || '(không tiêu đề)') + (a.status === 'hidden' ? ' <span style="font-size:11px; color:var(--danger);">[ẨN]</span>' : '') + '</h3>' +
     (a.summary ? '<p class="art-summary">' + escapeHtml(a.summary) + '</p>' : '') +
     '<div class="art-meta">' +
       '<span>✍️ <strong>' + escapeHtml(a.authorName || 'Ẩn danh') + '</strong></span>' +
@@ -14912,6 +15372,7 @@ function renderArticleCard(a, isAdminUser) {
 
 async function openArticleDetail(id) {
   _currentArticleId = id;
+  updateHashRoute(['article', id]);
   try {
     const ref = window.fb.doc(window.fb.db, COMMUNITY_ARTICLES_COLLECTION, id);
     await window.fb.updateDoc(ref, { viewCount: window.fb.increment(1) });
@@ -14954,7 +15415,8 @@ async function renderArticleDetail(id) {
         '<div class="art-body">' + mdToHtml(a.body || '') + '</div>' +
       '</div>' +
       '<div class="art-actions">' +
-        (me ? '<button class="art-upvote-btn ' + (hasVoted ? 'voted' : '') + '" onclick="toggleArticleUpvote(\'' + a.id + '\')">' + (hasVoted ? '✓ Đã upvote' : '👍 Upvote') + ' (' + (a.upvoteCount || 0) + ')</button>' : '') +
+        '<button class="art-upvote-btn" onclick="shareLink(\'article\', \'' + a.id + '\', ' + JSON.stringify(a.title || '') + ')">🔗 Chia sẻ</button>' +
+        '<button class="art-upvote-btn ' + (hasVoted ? 'voted' : '') + '" onclick="' + (window._isGuest ? 'requireLogin(\'Đăng nhập để upvote bài viết.\')' : ('toggleArticleUpvote(\'' + a.id + '\')')) + '">' + (hasVoted ? '✓ Đã upvote' : '👍 Upvote') + ' (' + (a.upvoteCount || 0) + ')</button>' +
         (isAuthor ? '<button class="art-upvote-btn" onclick="openArticleEditor(\'' + a.id + '\')">✏️ Sửa</button>' : '') +
         (isAuthor || isAdminUser ? '<button class="art-upvote-btn" style="color:var(--danger);" onclick="deleteArticle(\'' + a.id + '\')">🗑️ Xóa</button>' : '') +
         (isAdminUser ? '<button class="art-upvote-btn" onclick="toggleArticleFeatured(\'' + a.id + '\', ' + !!a.featured + ')">' + (a.featured ? '⬇️ Bỏ Featured' : '⭐ Đặt Featured') + '</button>' : '') +
@@ -15005,6 +15467,7 @@ async function loadArticleComments(articleId) {
 }
 
 async function postArticleComment(articleId) {
+  if (window._isGuest) { requireLogin('Đăng nhập để bình luận.'); return; }
   const me = getCurrentUserInfo();
   if (!me) return alert('Cần đăng nhập.');
   const ta = document.getElementById('art-comment-input');
@@ -15086,6 +15549,7 @@ async function deleteArticle(id) {
 let _editingArticle = { id: null, title: '', summary: '', body: '', tags: [] };
 
 async function openArticleEditor(id) {
+  if (window._isGuest) { requireLogin('Đăng nhập để viết bài.'); return; }
   const me = getCurrentUserInfo();
   if (!me) return alert('Cần đăng nhập để viết bài.');
   _articleEditorTab = 'markdown';
@@ -17172,8 +17636,8 @@ function renderLevelAssessment() {
   const { currentLevel, levelResults, nextLevelResult, ctx, specialty } = result;
   const currentLvlInfo = currentLevel > 0 ? CONSULTANT_LEVELS[currentLevel - 1] : null;
   panel.innerHTML = '' +
-    buildRoadmapJourney(currentLevel, nextLevelResult) +
     renderNewsFeed() +
+    buildRoadmapJourney(currentLevel, nextLevelResult) +
     '<div class="level-hero lvl-' + currentLevel + '">' +
       (currentLvlInfo
         ? '<div class="level-badge">' + currentLvlInfo.icon + ' CẤP ĐỘ HIỆN TẠI</div>' +
